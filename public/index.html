@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spy School - Mystery Puzzle Game</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen">
+        <div class="login-container">
+            <h1>🕵️ Spy School</h1>
+            <h2>Mystery Puzzle Game</h2>
+            <div class="login-form">
+                <input type="text" id="groupName" placeholder="Enter your group name" maxlength="20">
+                <button id="joinBtn">Join Game</button>
+            </div>
+            <div class="instructions">
+                <h3>How to Play:</h3>
+                <ul>
+                    <li><strong>Spies:</strong> Find and decrypt 3 clues to win</li>
+                    <li><strong>Killer:</strong> Eliminate all spy groups to win</li>
+                    <li><strong>Controls:</strong> WASD to move, F for flashlight, E to interact, K to eliminate (Killer only)</li>
+                    <li><strong>Timer:</strong> Killer can eliminate every 5 minutes using K key</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Waiting Screen -->
+    <div id="waitingScreen" class="screen hidden">
+        <div class="waiting-container">
+            <h1>🕵️ Waiting Lobby</h1>
+            <h2>Preparing Game...</h2>
+            
+            <div class="waiting-info">
+                <h3>Players in Lobby:</h3>
+                <ul id="waitingPlayersList"></ul>
+                
+                <div id="playersNeeded">Waiting for more players...</div>
+                <div id="countdownDisplay" class="countdown hidden"></div>
+            </div>
+            
+            <div class="waiting-instructions">
+                <p>🎯 <strong>Game Rules:</strong></p>
+                <ul>
+                    <li>One player will be randomly selected as the <span style="color: #ff4444;">Killer</span></li>
+                    <li>All other players are <span style="color: #44ff44;">Spies</span></li>
+                    <li>Spies must find and decrypt 3 clues to win</li>
+                    <li>Killer must eliminate all spy groups to win</li>
+                    <li>Minimum 3 players needed to start</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role Assignment Screen -->
+    <div id="roleAssignmentScreen" class="screen hidden">
+        <div class="role-assignment-container">
+            <h1>🎲 Role Assignment</h1>
+            <h2>Determining your role...</h2>
+            
+            <div class="countdown-container">
+                <div id="roleCountdown" class="role-countdown">5</div>
+                <div class="countdown-text">Preparing game...</div>
+            </div>
+            
+            <div id="assignedRole" class="assigned-role hidden">
+                <h3 id="roleResult"></h3>
+                <p id="roleDescription"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen" class="screen hidden">
+        <!-- Notifications Container -->
+        <div id="notifications"></div>
+        
+        <!-- 3D Game Canvas -->
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- HUD -->
+        <div id="hud">
+            <div id="roleDisplay"></div>
+            <div id="timer">Next Elimination: 5:00</div>
+            <div id="playerList">
+                <h4>Players:</h4>
+                <ul id="players"></ul>
+            </div>
+            <div id="clueCounter">Clues Found: 0/3</div>
+        </div>
+
+        <!-- Controls Info -->
+        <div id="controls">
+            <div>WASD: Move</div>
+            <div>Space: Jump</div>
+            <div>F: Flashlight</div>
+            <div>E: Interact</div>
+            <div id="eliminateControl" style="display: none;">K: Eliminate</div>
+            <div>Mouse: Look Around</div>
+        </div>
+
+        <!-- Cipher Tool -->
+        <div id="cipherTool" class="hidden">
+            <div class="cipher-container">
+                <h3>🔐 Cipher Decoder</h3>
+                <div class="cipher-content">
+                    <div class="encrypted-text">
+                        <label>Encrypted Message:</label>
+                        <div id="encryptedMessage"></div>
+                    </div>
+                    <div class="cipher-key">
+                        <label>Cipher Key (A-Z Mapping):</label>
+                        <div id="cipherKeyDisplay"></div>
+                    </div>
+                    <div class="decryption-area">
+                        <label>Your Decryption:</label>
+                        <input type="text" id="decryptionInput" placeholder="Enter decrypted message">
+                        <button id="submitDecryption">Submit</button>
+                        <div id="errorMessage" class="error-message">Incorrect! Try again.</div>
+                    </div>
+                    <div class="helper-text">
+                        <p>Use the cipher key above to decode the encrypted message. Each letter maps to another letter.</p>
+                    </div>
+                </div>
+                <button id="closeCipher">Close</button>
+            </div>
+        </div>
+
+        <!-- Interaction Prompt -->
+        <div id="interactionPrompt" class="hidden">
+            <div>Press E to interact with clue</div>
+        </div>
+
+        <!-- Game Messages -->
+        <div id="gameMessages"></div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen" class="screen hidden">
+        <div class="game-over-container">
+            <h1 id="gameOverTitle"></h1>
+            <h2 id="gameOverMessage"></h2>
+            <button id="playAgainBtn">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="client.js"></script>
+    <script src="ui.js"></script>
+</body>
+</html>
