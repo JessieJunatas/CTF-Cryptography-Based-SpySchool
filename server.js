@@ -12,7 +12,7 @@ let gameState = {
     groups: [],
     killer: null,
         clues: [
-            { id: 1, location: "library", message: "KILLER AVOIDS GROUPS", encrypted: "NLOOHU DYRLGV JURXSV" },
+            { id: 1, location: "Cafeteria", message: "KILLER AVOIDS GROUPS", encrypted: "NLOOHU DYRLGV JURXSV" },
             { id: 2, location: "classroom", message: "KILLER WATCHES OTHERS", encrypted: "NLOOHU ZDWFKHV RWKHUV" },
             { id: 3, location: "office", message: "KILLER STAYS IN SHADOWS", encrypted: "NLOOHU VWDBV LQ VKDGRZV" },
             { id: 4, location: "second floor library", message: "KILLER HUNTS ALONE", encrypted: "NLOOHU KXQWV DORQH" },

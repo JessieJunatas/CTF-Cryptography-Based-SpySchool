@@ -1765,25 +1765,35 @@ function createDoors() {
 }
 
 function createDoor(x, y, z, name) {
-    const doorMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 }); // Brown color
-    
-    // Create door geometry - slightly wider and thicker
+    const textureLoader = new THREE.TextureLoader();
+    const doorTexture = textureLoader.load('textures/door.jpg'); // 🔑 Your door image here
+
+    doorTexture.wrapS = doorTexture.wrapT = THREE.RepeatWrapping;
+    doorTexture.repeat.set(1, 1); // optional, adjust if you want to tile the door image
+
+    const doorMaterial = new THREE.MeshStandardMaterial({
+        map: doorTexture,
+        roughness: 0.6
+    });
+
+    // Same geometry and position
     const doorGeometry = new THREE.BoxGeometry(2.2, 5, 0.3);
     const door = new THREE.Mesh(doorGeometry, doorMaterial);
     door.position.set(x, y + 1.5, z);
     door.castShadow = true;
     door.receiveShadow = true;
-    
-    // Add door properties
+
+    // Door logic unchanged
     door.isOpen = false;
     door.originalPosition = { x: x, y: y + 1.5, z: z };
-    door.openPosition = { x: x + 2, y: y + 1.5, z: z }; // Slide further to the right when open
+    door.openPosition = { x: x + 2, y: y + 1.5, z: z }; // Slide to open
     door.name = name;
-    door.isAnimating = false; // Track animation state
-    
+    door.isAnimating = false;
+
     scene.add(door);
     doors.push(door);
 }
+
 
 function openDoor(door) {
     if (door.isOpen || door.isAnimating) return;
@@ -1862,8 +1872,30 @@ function animateDoor(door, startPos, endPos, duration) {
 let walls = [];
 
 function createSchool() {
-    const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
-    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
+// Load textures
+const textureLoader = new THREE.TextureLoader();
+
+const wallTexture = textureLoader.load('textures/wall.jpg');
+wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping;
+wallTexture.repeat.set(50, 1); // Play with these numbers!
+
+const floorTexture = textureLoader.load('textures/floor.jpg');
+floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+floorTexture.repeat.set(50, 50);
+
+const wallMaterial = new THREE.MeshStandardMaterial({
+  map: wallTexture,
+  roughness: 0.7
+});
+
+const floorMaterial = new THREE.MeshStandardMaterial({
+  map: floorTexture,
+  roughness: 0.5,
+  metalness: 0.1
+});
+
+
+
 
     // Clear walls array
     walls = [];
@@ -1925,36 +1957,43 @@ function createSchool() {
 }
 
 function createRoom(x, y, z, width, height, depth, rotationY = 0) {
-    const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
-    
-    // Create a group to hold all room parts for rotation
+    const textureLoader = new THREE.TextureLoader();
+    const wallTexture = textureLoader.load('textures/schoolwall.jpg');
+    wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping;
+    wallTexture.repeat.set(1, 1); // adjust for better tiling
+
+    const wallMaterial = new THREE.MeshStandardMaterial({
+        map: wallTexture,
+        roughness: 0.7
+    });
+
     const roomGroup = new THREE.Group();
-    
+
     // Back wall
     const backWall = new THREE.Mesh(
         new THREE.BoxGeometry(width, height, 0.2),
         wallMaterial
     );
-    backWall.position.set(0, height/2, depth/2);
+    backWall.position.set(0, height / 2, depth / 2);
     backWall.castShadow = true;
     backWall.receiveShadow = true;
     roomGroup.add(backWall);
 
     // Front wall with door opening
     const frontWallLeft = new THREE.Mesh(
-        new THREE.BoxGeometry((width-2)/2, height, 0.2),
+        new THREE.BoxGeometry((width - 2) / 2, height, 0.2),
         wallMaterial
     );
-    frontWallLeft.position.set(-width/4 - 0.5, height/2, -depth/2);
+    frontWallLeft.position.set(-width / 4 - 0.5, height / 2, -depth / 2);
     frontWallLeft.castShadow = true;
     frontWallLeft.receiveShadow = true;
     roomGroup.add(frontWallLeft);
 
     const frontWallRight = new THREE.Mesh(
-        new THREE.BoxGeometry((width-2)/2, height, 0.2),
+        new THREE.BoxGeometry((width - 2) / 2, height, 0.2),
         wallMaterial
     );
-    frontWallRight.position.set(width/4 + 0.5, height/2, -depth/2);
+    frontWallRight.position.set(width / 4 + 0.5, height / 2, -depth / 2);
     frontWallRight.castShadow = true;
     frontWallRight.receiveShadow = true;
     roomGroup.add(frontWallRight);
@@ -1964,7 +2003,7 @@ function createRoom(x, y, z, width, height, depth, rotationY = 0) {
         new THREE.BoxGeometry(0.2, height, depth),
         wallMaterial
     );
-    leftWall.position.set(-width/2, height/2, 0);
+    leftWall.position.set(-width / 2, height / 2, 0);
     leftWall.castShadow = true;
     leftWall.receiveShadow = true;
     roomGroup.add(leftWall);
@@ -1973,35 +2012,33 @@ function createRoom(x, y, z, width, height, depth, rotationY = 0) {
         new THREE.BoxGeometry(0.2, height, depth),
         wallMaterial
     );
-    rightWall.position.set(width/2, height/2, 0);
+    rightWall.position.set(width / 2, height / 2, 0);
     rightWall.castShadow = true;
     rightWall.receiveShadow = true;
     roomGroup.add(rightWall);
 
-
     // Position and rotate the entire room group
     roomGroup.position.set(x, y, z);
     roomGroup.rotation.y = rotationY;
-    
+
     scene.add(roomGroup);
 
-    // Add walls to collision detection (need to calculate rotated positions)
+    // Same collision logic
     const cos = Math.cos(rotationY);
     const sin = Math.sin(rotationY);
-    
-    // Transform wall positions based on rotation
+
     const wallPositions = [
-        { localX: 0, localZ: depth/2, width: width, depth: 0.2 }, // back wall
-        { localX: -width/4 - 1, localZ: -depth/2, width: (width-2)/2, depth: 0.2 }, // front left
-        { localX: width/4 + 1, localZ: -depth/2, width: (width-2)/2, depth: 0.2 }, // front right
-        { localX: -width/2, localZ: 0, width: 0.2, depth: depth }, // left wall
-        { localX: width/2, localZ: 0, width: 0.2, depth: depth } // right wall
+        { localX: 0, localZ: depth / 2, width: width, depth: 0.2 }, // back wall
+        { localX: -width / 4 - 1, localZ: -depth / 2, width: (width - 2) / 2, depth: 0.2 }, // front left
+        { localX: width / 4 + 1, localZ: -depth / 2, width: (width - 2) / 2, depth: 0.2 }, // front right
+        { localX: -width / 2, localZ: 0, width: 0.2, depth: depth }, // left wall
+        { localX: width / 2, localZ: 0, width: 0.2, depth: depth } // right wall
     ];
-    
+
     wallPositions.forEach(wall => {
         const rotatedX = wall.localX * cos - wall.localZ * sin;
         const rotatedZ = wall.localX * sin + wall.localZ * cos;
-        
+
         walls.push({
             x: x + rotatedX,
             z: z + rotatedZ,
@@ -2010,8 +2047,7 @@ function createRoom(x, y, z, width, height, depth, rotationY = 0) {
         });
     });
 
-
-    // Add room name UI label
+    // Keep your label (but note: `name` is undefined in your original)
     const roomLabel = document.createElement('div');
     roomLabel.className = 'room-label';
     roomLabel.textContent = name;
@@ -2022,6 +2058,7 @@ function createRoom(x, y, z, width, height, depth, rotationY = 0) {
     roomLabel.style.borderRadius = '3px';
     document.body.appendChild(roomLabel);
 }
+
 
 function createBasicPlayerModel(isKiller) {
     const group = new THREE.Group();
@@ -2488,75 +2525,139 @@ function createSecondFloor() {
     const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x555555 });
     const stepHeight = 0.2;
     const numSteps = 20;
-    const secondFloorHeight = numSteps * stepHeight; // Align with stair platform height (4 units)
+    const secondFloorHeight = numSteps * stepHeight;
     const floorThickness = 0.2;
-    
-    // Create a solid second floor platform that aligns with the stair platform
-    // Position it away from the staircase area to avoid blocking first floor access
-    const secondFloorWidth = 55; // Smaller width to avoid covering stairs
-    const secondFloorDepth = 25; // Smaller depth
-    
+
+    const secondFloorWidth = 55;
+    const secondFloorDepth = 25;
+
     const secondFloorGeometry = new THREE.BoxGeometry(secondFloorWidth, floorThickness, secondFloorDepth);
     const secondFloor = new THREE.Mesh(secondFloorGeometry, floorMaterial);
-    
-    // Position the second floor away from the staircase (which is at -22.5, 0, -14)
-    // Place it more towards the center/front of the building
-    secondFloor.position.set(10, secondFloorHeight + floorThickness/2, -16.5);
+    secondFloor.position.set(10, secondFloorHeight + floorThickness / 2, -16.5);
     secondFloor.castShadow = true;
     secondFloor.receiveShadow = true;
     scene.add(secondFloor);
-    
-    // Add collision detection for the second floor platform with correct coordinates
+
     walls.push({
-        x: 10, // Match the actual platform X position (same as visual platform)
-        z: -16.5,  // Match the actual platform Z position (same as visual platform)
+        x: 10,
+        z: -16.5,
         width: secondFloorWidth,
         depth: secondFloorDepth,
-        height: secondFloorHeight, // Just the height, not including thickness
-        isStair: true, // Treat as walkable like stairs
-        isSecondFloor: true // Mark as second floor for special handling
+        height: secondFloorHeight,
+        isStair: true,
+        isSecondFloor: true
     });
-    
+
     const libraryPlatformWidth = 83;
     const libraryPlatformDepth = 30;
-    
+
     const libraryPlatformGeometry = new THREE.BoxGeometry(libraryPlatformWidth, floorThickness, libraryPlatformDepth);
     const libraryPlatform = new THREE.Mesh(libraryPlatformGeometry, floorMaterial);
-    
-    // Position it properly aligned with the main platform
-    // Connect it to the right side of the main platform (x=10 + 55/2 = 37.5)
-    libraryPlatform.position.set(-15, secondFloorHeight + floorThickness/2, 10);
+    libraryPlatform.position.set(-15, secondFloorHeight + floorThickness / 2, 10);
     libraryPlatform.castShadow = true;
     libraryPlatform.receiveShadow = true;
     scene.add(libraryPlatform);
-    
-    // Add collision detection for the library platform with correct coordinates
+
     walls.push({
-        x: -15, // Match the visual platform position
-        z: 10, // Match the actual visual platform Z position
+        x: -15,
+        z: 10,
         width: libraryPlatformWidth,
         depth: libraryPlatformDepth,
-        height: secondFloorHeight, // Same height as main platform
-        isStair: true, // Treat as walkable like stairs
-        isSecondFloor: true // Mark as second floor for special handling
+        height: secondFloorHeight,
+        isStair: true,
+        isSecondFloor: true
     });
 
-    // Second floor rooms with walls
-    createSecondFloorRoom(5, secondFloorHeight, -21.5, 12, 6, 8, "Second Floor Library", Math.PI);
-    createSecondFloorRoom(20, secondFloorHeight, -21.5, 12, 6, 8, "Second Floor Computer Lab", Math.PI);
-    createSecondFloorRoom(35, secondFloorHeight, -25, 12, 6, 8, "Second Floor Study Hall", Math.PI);
+    // === Rooms ===
+    createSecondFloorRoom(7.2, secondFloorHeight, -21.5, 12, 6, 8, "Second Floor Library", Math.PI);
+    createSecondFloorRoom(19.2, secondFloorHeight, -21.5, 12, 6, 8, "Second Floor Computer Lab", Math.PI);
+    createSecondFloorRoom(-4.2, secondFloorHeight, -21.5, 12, 6, 8, "Second Floor Study Hall", Math.PI);
     createSecondFloorRoom(17, secondFloorHeight, 15, 15, 6, 25, "Second Floor Conference Room");
     createSecondFloorRoom(2, secondFloorHeight, 15, 15, 6, 25, "Second Floor Teacher's Lounge");
     createSecondFloorRoom(-15, secondFloorHeight, 15, 19, 6, 25, "Second Floor Art Room");
 
-    // Second floor doors
+    // === Doors ===
     createSecondFloorDoor(5, secondFloorHeight, -17.5, "Second Floor Library Door");
     createSecondFloorDoor(20, secondFloorHeight, -17.5, "Second Floor Computer Lab Door");
     createSecondFloorDoor(35, secondFloorHeight, -17.5, "Second Floor Study Hall Door");
     createSecondFloorDoor(17, secondFloorHeight, 2.5, "Second Floor Conference Room Door");
     createSecondFloorDoor(2, secondFloorHeight, 2.5, "Second Floor Teacher's Lounge Door");
     createSecondFloorDoor(-15, secondFloorHeight, 2.5, "Second Floor Art Room Door");
+
+    const loader = new THREE.GLTFLoader();
+
+   
+for (let i = 0; i < 3; i++) {
+  loader.load('models/bookshelf.glb', (gltf) => {
+    const shelf = gltf.scene;
+    shelf.scale.set(1, 1, 1);
+    shelf.position.set(1 + i * 3, secondFloorHeight, -21);
+    shelf.rotation.y = 0; 
+    scene.add(shelf);
+  });
 }
+
+for (let i = 0; i < 3; i++) {
+  loader.load('models/computer_desk.glb', (gltf) => {
+    const desk = gltf.scene;
+    desk.scale.set(1, 1, 1);
+    desk.position.set(20 + i * 3, secondFloorHeight, -24);
+    desk.rotation.y = 0; 
+    scene.add(desk);
+  });
+}
+
+
+for (let i = 0; i < 2; i++) {
+  loader.load('models/table.glb', (gltf) => {
+    const table = gltf.scene;
+    table.scale.set(0.7, 0.7, 0.7);
+    table.position.set(35, secondFloorHeight, -25 + i * 3);
+    scene.add(table);
+  });
+
+  loader.load('models/chair.glb', (gltf) => {
+    const chair = gltf.scene;
+    chair.scale.set(0.7, 0.7, 0.7);
+    chair.position.set(35, secondFloorHeight, -25 + i * 3 - 1.5);
+    chair.rotation.y = 0;
+    scene.add(chair);
+  });
+}
+
+// conference
+loader.load('models/conference_table.glb', (gltf) => {
+  const conferenceTable = gltf.scene;
+  conferenceTable.scale.set(0.5, 0.5, 0.5);
+  conferenceTable.position.set(22, secondFloorHeight, 15);
+  conferenceTable.rotation.y = -Math.PI / 2; 
+  scene.add(conferenceTable);
+});
+
+// Teacher's Lounge chairs 
+for (let i = 0; i < 2; i++) {
+  loader.load('models/lounge_chair.glb', (gltf) => {
+    const lounge = gltf.scene;
+    lounge.scale.set(2, 2, 2);
+    lounge.position.set(2 + i * 2, secondFloorHeight, 16);
+    lounge.rotation.y = Math.PI; // turn around to face door at front
+    scene.add(lounge);
+  });
+}
+
+// Art Room work tables 
+for (let i = 0; i < 2; i++) {
+  loader.load('models/art_table.glb', (gltf) => {
+    const artTable = gltf.scene;
+    artTable.scale.set(1.5, 1.5, 1.5);
+    artTable.position.set(-18 + i * 6, secondFloorHeight, 16);
+    artTable.rotation.y = Math.PI / 2; 
+    scene.add(artTable);
+  });
+}
+}
+
+
 
 // Second floor rooms Function
 function createSecondFloorRoom(x, y, z, width, height, depth, name, rotationY = 0) {
