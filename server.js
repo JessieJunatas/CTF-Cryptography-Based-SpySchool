@@ -25,7 +25,7 @@ let gameState = {
     gameStarted: false,
     killerCanEliminate: false,
     minPlayers: 3, // Minimum players to start the game
-    countdownTime: 1,
+    countdownTime: 10,
     countdownInterval: null
 };
 
@@ -484,7 +484,7 @@ function resetGame() {
         gameStarted: false,
         killerCanEliminate: false,
         minPlayers: 3, // Restored to 3 players minimum
-        countdownTime: 1,
+        countdownTime: 10,
         countdownInterval: null
     };
     

@@ -89,6 +89,118 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 const gameMessages = document.getElementById('gameMessages');
 
+//  Audio setup with proper error handling and browser compatibility
+    const horrorMusic = new Audio('/sounds/horror_background.mp3');
+    horrorMusic.loop = true;
+    horrorMusic.volume = 0.2;
+
+    // Use horror_background as ambient music with lower volume since ambient.mp3 is missing
+    const ambientMusic = new Audio('/sounds/ambient.mp3');
+    ambientMusic.loop = true;
+    ambientMusic.volume = 0.2; // Lower volume for ambient effect
+
+    const victoryMusic = new Audio('/sounds/victory.mp3');
+    victoryMusic.loop = false;
+    victoryMusic.volume = 0.2;
+
+    // Audio context for handling browser autoplay restrictions
+    let audioContext = null;
+    let audioInitialized = false;
+
+    // Initialize audio context on first user interaction
+    function initializeAudio() {
+        if (!audioInitialized) {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioInitialized = true;
+                console.log('Audio context initialized successfully');
+            } catch (error) {
+                console.warn('Failed to initialize audio context:', error);
+            }
+        }
+    }
+
+    // Play audio with proper error handling and autoplay workaround
+    function playAudio(audioElement, name) {
+        if (!audioInitialized) {
+            initializeAudio();
+        }
+        
+        const playPromise = audioElement.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                console.log(`${name} started playing successfully`);
+            }).catch(error => {
+                console.warn(`Failed to play ${name}:`, error.message);
+                
+                // Try to play after user interaction
+                const playOnInteraction = () => {
+                    audioElement.play().then(() => {
+                        console.log(`${name} started playing after user interaction`);
+                    }).catch(e => {
+                        console.warn(`Still failed to play ${name}:`, e.message);
+                    });
+                    document.removeEventListener('click', playOnInteraction);
+                    document.removeEventListener('keydown', playOnInteraction);
+                };
+                
+                document.addEventListener('click', playOnInteraction, { once: true });
+                document.addEventListener('keydown', playOnInteraction, { once: true });
+            });
+        }
+    }
+
+    // Add error event listeners for audio files
+    horrorMusic.addEventListener('error', (e) => {
+        console.error('Horror music failed to load:', e);
+    });
+    
+    ambientMusic.addEventListener('error', (e) => {
+        console.error('Ambient music failed to load:', e);
+    });
+    
+    victoryMusic.addEventListener('error', (e) => {
+        console.error('Victory music failed to load:', e);
+    });
+
+    // Play music when game starts
+    socket.on('gameJoined', (data) => {
+        initializeAudio();
+        
+        // Delay audio slightly to ensure game is fully loaded
+        setTimeout(() => {
+            playAudio(horrorMusic, 'horror music');
+            // Start ambient music with a slight delay
+            setTimeout(() => {
+                playAudio(ambientMusic, 'ambient music');
+            }, 1000);
+        }, 500);
+    });
+
+    // Play victory music when game ends
+    socket.on('gameWon', (data) => {
+        // Stop background music
+        horrorMusic.pause();
+        ambientMusic.pause();
+        
+        // Reset and play victory music
+        victoryMusic.currentTime = 0;
+        playAudio(victoryMusic, 'victory music');
+    });
+
+    socket.on('returnToLobby', () => {
+        // Stop all audio
+        horrorMusic.pause();
+        ambientMusic.pause();
+        victoryMusic.pause();
+        
+        // Reset audio positions
+        horrorMusic.currentTime = 0;
+        ambientMusic.currentTime = 0;
+        victoryMusic.currentTime = 0;
+    });
+
 // Role assignment elements
 const spinnerWheel = document.getElementById('spinnerWheel');
 const roleCountdown = document.getElementById('roleCountdown');
@@ -158,6 +270,8 @@ const FLASHLIGHT_UPDATE_INTERVAL = 100; // Update every 100ms instead of every f
 //         }
 //     }
 // }
+
+
 
 joinBtn.addEventListener('click', () => {
     const name = groupNameInput.value.trim();
@@ -531,7 +645,7 @@ socket.on('clueProgress', (data) => {
         // Update killer's HUD with clue progress
         const clueProgressDiv = document.getElementById('clueProgress') || createClueProgressDiv();
         clueProgressDiv.innerHTML = `
-            <h4>🔍 Spy Progress</h4>
+            <h4> Spy Progress</h4>
             <div>Players with clues: ${data.playersWithClues}/${data.totalPlayers}</div>
             <div>Total clues solved: ${data.totalSolvedClues}</div>
             <div>Latest: ${data.playerName} (${data.playerCluesCount}/3)</div>
@@ -1138,7 +1252,7 @@ function onMouseMove(event) {
             const characterModel = players[socket.id].children.find(child => child.userData && child.userData.isCharacterModel);
             if (characterModel) {
                 // Only rotate the character horizontally (Y-axis) to match movement direction, not camera look
-                characterModel.rotation.y = yaw + Math.PI; // Add PI to face forward
+                characterModel.rotation.y = yaw + Math.PI;
             }
         }
     }
@@ -1919,6 +2033,745 @@ const floorMaterial = new THREE.MeshStandardMaterial({
     createRoom(-2, 0, 8, 6, 4, 8 );// Head office
     createRoom(19, 0, 8, 8, 4, 8); // Cafeteria room
 
+
+    // CAFETERIA FURNITURES
+    const tableMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+    const chairMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+
+    for (let i = 0; i < 3; i++) {
+        const tableX = -22 + i * 7;
+        const tableZ = 11.5;
+
+        const table = new THREE.Mesh(
+            new THREE.BoxGeometry(3, 0.2, 1),
+            tableMaterial
+        );
+        table.position.set(tableX, 1, tableZ);
+        scene.add(table);
+
+        // Two box legs for table
+        for (let dx of [-1.2, 1.2]) {
+            const leg = new THREE.Mesh(
+                new THREE.BoxGeometry(0.2, 1, 0.2),
+                new THREE.MeshStandardMaterial({ color: 0x3e2723 })
+            );
+            leg.position.set(tableX + dx, 0.5, tableZ);
+            scene.add(leg);
+        }
+
+        // 3 chairs per side (total 6)
+        const chairOffsets = [-0.8, 0, 0.8];
+        for (let zOffset of [-1, 1]) {
+            for (let xOffset of chairOffsets) {
+                const chair = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.6, 0.6, 0.6),
+                    chairMaterial
+                );
+                chair.position.set(tableX + xOffset, 0.3, tableZ + zOffset);
+                scene.add(chair);
+            }
+        }
+    }
+
+    // Serving counter 
+    const counterGeometry = new THREE.BoxGeometry(9, 1, 1);
+    const counterMaterial = new THREE.MeshStandardMaterial({ color: 0x555555 });
+    const counter = new THREE.Mesh(counterGeometry, counterMaterial);
+    counter.position.set(-13, 0.5, 15);
+    scene.add(counter);
+
+    //  Metal food trays 
+    const trayGeometry = new THREE.BoxGeometry(0.8, 0.1, 0.4);
+    const trayMaterial = new THREE.MeshStandardMaterial({ color: 0xc0c0c0 });
+    for (let i = 0; i < 5; i++) {
+        const tray = new THREE.Mesh(trayGeometry, trayMaterial);
+        tray.position.set(-16.5 + i * 1.8, 1.05, 14.7);
+        scene.add(tray);
+    }
+
+    //  Large soup pot 
+    const potGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.4, 32);
+    const potMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+    const soupPot = new THREE.Mesh(potGeometry, potMaterial);
+    soupPot.position.set(-13.9, 1.2, 14.7);
+    scene.add(soupPot);
+
+    // Drink dispenser 
+    const dispenser = new THREE.Mesh(
+        new THREE.BoxGeometry(0.5, 0.8, 0.5),
+        new THREE.MeshStandardMaterial({ color: 0x0077ff })
+    );
+    dispenser.position.set(-8.7, 1.4, 14.8);
+    scene.add(dispenser);
+
+    //  Sneeze guard 
+    const glassGeometry = new THREE.BoxGeometry(9, 0.4, 0.05);
+    const glassMaterial = new THREE.MeshStandardMaterial({
+        color: 0xaaaaaa,
+        transparent: true,
+        opacity: 0.3
+    });
+    const sneezeGuard = new THREE.Mesh(glassGeometry, glassMaterial);
+    sneezeGuard.position.set(-13, 1.3, 15.05);
+    scene.add(sneezeGuard);
+
+    // Trash bin 
+    const trashGeometry = new THREE.BoxGeometry(0.5, 0.7, 0.5);
+    const trashMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+    const trashBin = new THREE.Mesh(trashGeometry, trashMaterial);
+    trashBin.position.set(-5.5, 0.35, 4.7);
+    scene.add(trashBin);
+
+    // Mop bucket 
+    const bucketGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.4, 16);
+    const bucketMaterial = new THREE.MeshStandardMaterial({ color: 0xffff00 });
+    const bucket = new THREE.Mesh(bucketGeometry, bucketMaterial);
+    bucket.position.set(-24, 0.2, 9.5);
+    scene.add(bucket);
+
+    // Ceiling lights 
+    const lightGeometry = new THREE.BoxGeometry(2, 0.1, 0.5);
+    const lightMaterial = new THREE.MeshStandardMaterial({
+        color: 0xfefefe,
+        emissive: 0x111111,
+        metalness: 0.3,
+        roughness: 0.2
+    });
+
+    const lightPositions = [-22, -15, -8];
+    for (let i = 0; i < lightPositions.length; i++) {
+        const lightMesh = new THREE.Mesh(lightGeometry, lightMaterial);
+        lightMesh.position.set(lightPositions[i], 4, 11.5);
+        scene.add(lightMesh);
+    }
+
+    // HEAD OFFICE FURNITURES
+    const desk = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 1, 1),
+        new THREE.MeshStandardMaterial({ color: 0x8b5a2b })
+    );
+    desk.position.set(-2, 0.5, 10);
+    scene.add(desk);
+
+    // Office chair
+    const officeChair = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.6, 0.6),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+    );
+    officeChair.position.set(-2, 0.3, 11);
+    scene.add(officeChair);
+    const backrest = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.8, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+    );
+    backrest.position.set(-2, 0.9, 11.25);
+    scene.add(backrest);
+
+    // Small plant
+    const pot = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.2, 0.2, 0.3, 16),
+        new THREE.MeshStandardMaterial({ color: 0x663300 })
+    );
+    pot.position.set(-0.5, 0.15, 10);
+    scene.add(pot);
+
+    const leaves = new THREE.Mesh(
+        new THREE.SphereGeometry(0.35, 16, 16),
+        new THREE.MeshStandardMaterial({ color: 0x228B22 })
+    );
+    leaves.position.set(-0.5, 0.45, 10);
+    scene.add(leaves);
+
+    // Paintings on the walls
+    const paintingGeometry = new THREE.PlaneGeometry(2, 1.5);
+    const paintingMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: new THREE.TextureLoader().load('pic/tree-painting.jpg'),
+        side: THREE.DoubleSide
+    });
+
+    // Behind the desk 
+    const backPainting = new THREE.Mesh(paintingGeometry, paintingMaterial);
+    backPainting.position.set(-2, 2, 11.8);
+    backPainting.rotation.y = Math.PI;
+    scene.add(backPainting);
+
+    // Bookshelf 
+    const bookshelf = new THREE.Mesh(
+        new THREE.BoxGeometry(1, 2, 0.3),
+        new THREE.MeshStandardMaterial({ color: 0x5c3a1a })
+    );
+    bookshelf.position.set(0.3, 1, 9);
+    scene.add(bookshelf);
+
+    // Second file cabinet 
+    const fileCabinet2 = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 1.2, 0.5),
+        new THREE.MeshStandardMaterial({ color: 0x999999 })
+    );
+    fileCabinet2.position.set(-4.6, 0.6, 4.4);
+    scene.add(fileCabinet2);
+
+    // Cardboard box on floor
+    const box = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.4, 0.6),
+        new THREE.MeshStandardMaterial({ color: 0xcc9966 })
+    );
+    box.position.set(0.3, 0.2, 6.3);
+    scene.add(box);
+
+    // Computer monitor on desk
+    const monitor = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 0.5, 0.05),
+        new THREE.MeshStandardMaterial({ color: 0x222222 })
+    );
+    monitor.position.set(-2, 1.2, 9.9);
+    scene.add(monitor);
+
+    // Monitor stand (tiny base)
+    const monitorStand = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.05, 0.2, 16),
+        new THREE.MeshStandardMaterial({ color: 0x444444 })
+    );
+    monitorStand.position.set(-2, 1, 9.9);
+    scene.add(monitorStand);
+
+    // Sofa 
+    const sofaGroup = new THREE.Group();
+
+    // Sofa base
+    const sofaBase = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 0.4, 0.8),
+        new THREE.MeshStandardMaterial({ color: 0x555577 })
+    );
+    sofaBase.position.set(0, 0, 0);
+    sofaGroup.add(sofaBase);
+
+    // Backrest
+    const sofaBack = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 0.6, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x555577 })
+    );
+    sofaBack.position.set(0, 0.3, -0.35);
+    sofaGroup.add(sofaBack);
+
+    // Left armrest
+    const armLeft = new THREE.Mesh(
+        new THREE.BoxGeometry(0.1, 0.4, 0.8),
+        new THREE.MeshStandardMaterial({ color: 0x555577 })
+    );
+    armLeft.position.set(-0.95, 0, 0);
+    sofaGroup.add(armLeft);
+
+    // Right armrest
+    const armRight = armLeft.clone();
+    armRight.position.set(0.95, 0, 0);
+    sofaGroup.add(armRight);
+
+    sofaGroup.rotation.y = Math.PI / 2;
+
+    // Final position in Head Office
+    sofaGroup.position.set(-4, 0.2, 7.5);
+    scene.add(sofaGroup);
+
+    // PRINCIPAL'S OFFICE FURNITURES
+    const principalChair = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.6, 0.6),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+    );
+    principalChair.position.set(4, 0.3, 9.8);
+    scene.add(principalChair);
+
+    // Chair backrest
+    const backrestP = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.8, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+    );
+    backrestP.position.set(4, 0.9, 10.10);
+    scene.add(backrestP);
+
+    // Principal’s desk
+    const principalDesk = new THREE.Mesh(
+        new THREE.BoxGeometry(2.2, 1, 1),
+        new THREE.MeshStandardMaterial({ color: 0x8b5a2b })
+    );
+    principalDesk.position.set(4, 0.5, 8.8);
+    scene.add(principalDesk);
+
+    // Monitor
+    const monitorP = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 0.5, 0.05),
+        new THREE.MeshStandardMaterial({ color: 0x222222 })
+    );
+    monitorP.position.set(4, 1.2, 8.5);
+    scene.add(monitorP);
+
+    // Monitor stand
+    const standP = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.05, 0.2, 16),
+        new THREE.MeshStandardMaterial({ color: 0x444444 })
+    );
+    standP.position.set(4, 1, 8.5);
+    scene.add(standP);
+
+    // File cabinet (back right corner)
+    const fileCabinetP = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 1.2, 0.5),
+        new THREE.MeshStandardMaterial({ color: 0xaaaaaa })
+    );
+    fileCabinetP.position.set(6.5, 0.6, 11);
+    scene.add(fileCabinetP);
+
+    // Sofa A 
+    const sofaA = new THREE.Mesh(
+        new THREE.BoxGeometry(2.5, 0.4, 0.8),
+        new THREE.MeshStandardMaterial({ color: 0x555577 })
+    );
+    sofaA.position.set(2.5, 0.2, 6.5);
+    sofaA.rotation.y = Math.PI / 2;
+    scene.add(sofaA);
+
+    // Sofa B 
+    const sofaB = sofaA.clone();
+    sofaB.position.set(5.5, 0.2, 6.5);
+    sofaB.rotation.y = -Math.PI / 2;
+    scene.add(sofaB);
+
+    const backrestA = new THREE.Mesh(
+        new THREE.BoxGeometry(2.5, 0.6, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x555577 })
+    );
+    backrestA.position.set(2.05, 0.5, 6.5);
+    backrestA.rotation.y = Math.PI / 2;
+    scene.add(backrestA);
+
+
+    const backrestB = new THREE.Mesh(
+        new THREE.BoxGeometry(2.5, 0.6, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x555577 })
+    );
+    backrestB.position.set(5.95, 0.5, 6.5);
+    backrestB.rotation.y = -Math.PI / 2;
+    scene.add(backrestB);
+
+    // Plant in far corner
+    const potP = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.2, 0.2, 0.3, 16),
+        new THREE.MeshStandardMaterial({ color: 0x663300 })
+    );
+    potP.position.set(1.5, 0.15, 11);
+    scene.add(potP);
+
+    const leavesP = new THREE.Mesh(
+        new THREE.SphereGeometry(0.35, 16, 16),
+        new THREE.MeshStandardMaterial({ color: 0x228B22 })
+    );
+    leavesP.position.set(1.5, 0.45, 11);
+    scene.add(leavesP);
+
+    // 🖼️ Painting behind desk
+    const paintingGeoP = new THREE.PlaneGeometry(2, 1.5);
+    const paintingMatP = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: new THREE.TextureLoader().load('pic/map-painting.jpg'),
+        side: THREE.DoubleSide
+    });
+    const paintingP = new THREE.Mesh(paintingGeoP, paintingMatP);
+    paintingP.position.set(4, 2.3, 11.8);
+    paintingP.rotation.y = Math.PI;
+    scene.add(paintingP);
+
+    // CLASSROOM A FURNITURES
+    const teacherChair = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.6, 0.6),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+    );
+    teacherChair.position.set(11, 0.3, 14.2);
+    scene.add(teacherChair);
+
+    // Teacher Chair Backrest
+    const teacherBack = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.8, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+    );
+    teacherBack.position.set(11, 0.9, 14.45);
+    scene.add(teacherBack);
+
+    // Teacher's Desk
+    const teacherDesk = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 1, 1),
+        new THREE.MeshStandardMaterial({ color: 0x8b5a2b })
+    );
+    teacherDesk.position.set(11, 0.5, 13.2);
+    scene.add(teacherDesk);
+
+    const classroomDeskMaterial = new THREE.MeshStandardMaterial({ color: 0x996633 });
+    const classroomChairMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
+
+    for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 2; col++) {
+            const x = 9 + col * 4;
+            const z = 11.5 - row * 2;
+
+            // Desk
+            const studentDesk = new THREE.Mesh(
+                new THREE.BoxGeometry(1.5, 0.8, 0.8),
+                classroomDeskMaterial
+            );
+            studentDesk.position.set(x, 0.4, z);
+            studentDesk.rotation.y = Math.PI;
+            scene.add(studentDesk);
+
+            // Chair
+            const studentChair = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.6, 0.6),
+                new THREE.MeshStandardMaterial({ color: 0xD3D3D3 })
+            );
+            studentChair.position.set(x, 0.3, z - 0.9);
+            studentChair.rotation.y = Math.PI;
+            scene.add(studentChair);
+
+            // Chair backrest
+            const backrest = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.8, 0.1),
+                new THREE.MeshStandardMaterial({ color: 0xD3D3D3 })
+            );
+            backrest.position.set(x, 0.9, z - 1.15);
+            backrest.rotation.y = Math.PI;
+            scene.add(backrest);
+        }
+    }
+
+    // Blackboard
+    const blackboard = new THREE.Mesh(
+        new THREE.BoxGeometry(6, 2, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x111111 })
+    );
+    blackboard.position.set(11, 2, 15.8);
+    scene.add(blackboard);
+
+    // CLASSROOM B FURNITURES
+    const deskMaterialB = new THREE.MeshStandardMaterial({ color: 0x996633 });
+    const chairMaterialB = new THREE.MeshStandardMaterial({ color: 0xD3D3D3 });
+
+    const teacherChairB = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.6, 0.6),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+    );
+    teacherChairB.position.set(8, 0.3, -17.2);
+    scene.add(teacherChairB);
+
+    // Chair backrest
+    const teacherBackB = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.8, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+    );
+    teacherBackB.position.set(8, 0.9, -17.45);
+    teacherBackB.rotation.y = 0;
+    scene.add(teacherBackB);
+
+    // 🧾 Teacher Desk 
+    const teacherDeskB = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 1, 1),
+        deskMaterialB
+    );
+    teacherDeskB.position.set(8, 0.5, -16.2);
+    scene.add(teacherDeskB);
+
+    for (let row = 0; row < 2; row++) {
+        for (let col = 0; col < 3; col++) {
+            const x = 6 + col * 2;
+            const z = -14.5 + row * 2;
+
+            // Desk
+            const desk = new THREE.Mesh(
+                new THREE.BoxGeometry(1.4, 0.8, 0.8),
+                deskMaterialB
+            );
+            desk.position.set(x, 0.4, z);
+            scene.add(desk);
+
+            // Chair
+            const chair = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.6, 0.6),
+                chairMaterialB
+            );
+            chair.position.set(x, 0.3, z + 0.9);
+            scene.add(chair);
+
+            // Backrest
+            const backrest = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.8, 0.1),
+                chairMaterialB
+            );
+            backrest.position.set(x, 0.9, z + 1.15);
+            scene.add(backrest);
+        }
+    }
+
+    // Blackboard 
+    const blackboardB = new THREE.Mesh(
+        new THREE.BoxGeometry(6, 2, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x111111 })
+    );
+    blackboardB.position.set(8, 2, -18.85);
+    blackboardB.rotation.y = Math.PI;
+    scene.add(blackboardB);
+
+    const posterTextureB = new THREE.TextureLoader().load('pic/poster.jpg');
+    const posterB = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.5, 1),
+        new THREE.MeshStandardMaterial({
+            map: posterTextureB,
+            side: THREE.DoubleSide
+        })
+    );
+    posterB.position.set(12.95, 2, -14);
+    posterB.rotation.y = -Math.PI / 2;
+
+    // CLASSROOM C FURNITURES
+    const deskMaterialC = new THREE.MeshStandardMaterial({ color: 0x996633 });
+    const studentChairMaterialC = new THREE.MeshStandardMaterial({ color: 0xD3D3D3 });
+    const teacherChairMaterialC = new THREE.MeshStandardMaterial({ color: 0x333333 });
+
+    const teacherChairC = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.6, 0.6),
+        teacherChairMaterialC
+    );
+    teacherChairC.position.set(-1, 0.3, -17.2);
+    scene.add(teacherChairC);
+
+    // Chair backrest
+    const teacherBackrestC = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.8, 0.1),
+        teacherChairMaterialC
+    );
+    teacherBackrestC.position.set(-1, 0.9, -17.55);
+    scene.add(teacherBackrestC);
+
+    // 🧾 Teacher Desk
+    const teacherDeskC = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 1, 1),
+        deskMaterialC
+    );
+    teacherDeskC.position.set(-1, 0.5, -16.2);
+    scene.add(teacherDeskC);
+
+    for (let row = 0; row < 2; row++) {
+        for (let col = 0; col < 3; col++) {
+            const x = -3 + col * 2;
+            const z = -14.5 + row * 2;
+
+            const studentDesk = new THREE.Mesh(
+                new THREE.BoxGeometry(1.4, 0.8, 0.8),
+                deskMaterialC
+            );
+            studentDesk.position.set(x, 0.4, z);
+            scene.add(studentDesk);
+
+            const studentChair = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.6, 0.6),
+                studentChairMaterialC
+            );
+            studentChair.position.set(x, 0.3, z + 0.9);
+            scene.add(studentChair);
+
+            const backrest = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.8, 0.1),
+                studentChairMaterialC
+            );
+            backrest.position.set(x, 0.9, z + 1.15);
+            scene.add(backrest);
+        }
+    }
+
+    const blackboardC = new THREE.Mesh(
+        new THREE.BoxGeometry(6, 2, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x111111 })
+    );
+    blackboardC.position.set(-1, 2, -18.85);
+    blackboardC.rotation.y = Math.PI;
+    scene.add(blackboardC);
+
+    // LOCKER ROOM FURNITURES
+    const lockerMaterial = new THREE.MeshStandardMaterial({ color: 0x555555 });
+    for (let i = 0; i < 5; i++) {
+        const locker = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 2, 0.6),
+            lockerMaterial
+        );
+        locker.position.set(14.5 + i * 1.2, 1, -18.7);
+        scene.add(locker);
+    }
+
+    const benchMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+
+    const bench1 = new THREE.Mesh(
+        new THREE.BoxGeometry(6, 0.3, 0.8),
+        benchMaterial
+    );
+    bench1.position.set(18, 0.15, -14);
+    scene.add(bench1);
+
+    const bench2 = bench1.clone();
+    bench2.position.set(18, 0.15, -16);
+    scene.add(bench2);
+
+    // Trash bin in corner
+    const bin = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.4, 0.4, 0.8, 16),
+        new THREE.MeshStandardMaterial({ color: 0x222222 })
+    );
+    bin.position.set(13.5, 0.4, -18.5);
+    scene.add(bin);
+
+    // Wall shelf 
+    const shelf = new THREE.Mesh(
+        new THREE.BoxGeometry(4, 0.2, 0.4),
+        new THREE.MeshStandardMaterial({ color: 0xaaaaaa })
+    );
+    shelf.position.set(13.1, 2, -14);
+    shelf.rotation.y = Math.PI / 2;
+    scene.add(shelf);
+
+    const posterTex1 = new THREE.TextureLoader().load('pic/poster.jpg');
+    const posterTex2 = new THREE.TextureLoader().load('pic/poster2.jpg');
+    const posterTex3 = new THREE.TextureLoader().load('pic/poster3.jpg');
+
+    const mat1 = new THREE.MeshStandardMaterial({ map: posterTex1, side: THREE.DoubleSide });
+    const mat2 = new THREE.MeshStandardMaterial({ map: posterTex2, side: THREE.DoubleSide });
+    const mat3 = new THREE.MeshStandardMaterial({ map: posterTex3, side: THREE.DoubleSide });
+
+    const posterW = 1.2;
+    const posterH = 1.6;
+
+    const poster1 = new THREE.Mesh(
+        new THREE.PlaneGeometry(posterW, posterH),
+        mat1
+    );
+    poster1.position.set(22.85, 2, -15.5);
+    poster1.rotation.y = -Math.PI / 2;
+    scene.add(poster1);
+
+    const poster2 = new THREE.Mesh(
+        new THREE.PlaneGeometry(posterW, posterH),
+        mat2
+    );
+    poster2.position.set(22.85, 2, -14);
+    poster2.rotation.y = -Math.PI / 2;
+    scene.add(poster2);
+
+    const poster3 = new THREE.Mesh(
+        new THREE.PlaneGeometry(posterW, posterH),
+        mat3
+    );
+    poster3.position.set(22.85, 2, -12.5);
+    poster3.rotation.y = -Math.PI / 2;
+    scene.add(poster3);
+
+    // LIBRARY ROOM FURNITURES
+    const libraryShelfMaterial = new THREE.MeshStandardMaterial({ color: 0x663300 }); // wood tone
+    const libraryDeskMaterial = new THREE.MeshStandardMaterial({ color: 0x996633 });
+    const libraryChairMaterial = new THREE.MeshStandardMaterial({ color: 0xD3D3D3 });
+
+    for (let i = 0; i < 3; i++) {
+        const shelf = new THREE.Mesh(
+            new THREE.BoxGeometry(1.8, 2.5, 0.4),
+            libraryShelfMaterial
+        );
+        shelf.position.set(16 + i * 2.5, 1.25, 11.8);
+        shelf.rotation.y = Math.PI;
+        scene.add(shelf);
+    }
+
+    const bookColors = [0xff5555, 0x55ff55, 0x5555ff, 0xffff55, 0xff55ff, 0x55ffff];
+
+    for (let shelfIndex = 0; shelfIndex < 3; shelfIndex++) {
+        const baseX = 16 + shelfIndex * 2.5;
+        const z = 11.6; 
+
+        for (let i = 0; i < 6; i++) {
+            const book = new THREE.Mesh(
+                new THREE.BoxGeometry(0.25, 0.6, 0.1),
+                new THREE.MeshStandardMaterial({ color: bookColors[i % bookColors.length] })
+            );
+            book.position.set(baseX - 0.6 + i * 0.25, 1.6, z); 
+            book.rotation.y = Math.PI;
+            scene.add(book);
+        }
+    }
+
+    // Librarian desk
+    const librarianDesk = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 1, 1),
+        libraryDeskMaterial
+    );
+    librarianDesk.position.set(17, 0.5, 6.5);
+    scene.add(librarianDesk);
+
+    const librarianChair = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.6, 0.6),
+        new THREE.MeshStandardMaterial({ color: 0x333333 }) 
+    );
+    librarianChair.position.set(17, 0.3, 5.6); 
+    scene.add(librarianChair);
+
+    const librarianBackrest = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.8, 0.1),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+    );
+    librarianBackrest.position.set(17, 0.9, 5.26); 
+    scene.add(librarianBackrest);
+
+    const readingTable = new THREE.Mesh(
+        new THREE.BoxGeometry(2.5, 0.2, 1.2),
+        libraryDeskMaterial
+    );
+    readingTable.position.set(20.5, 1, 8);
+    scene.add(readingTable);
+
+    const chairOffsets = [
+        { dx: 0.9, dz: 0, rotY: Math.PI / 2, backOffset: 0.35 },   // right
+        { dx: -0.9, dz: 0, rotY: Math.PI / 2, backOffset: -0.35 }, // left
+        { dx: 0, dz: 0.9, rotY: 0, backOffset: 0.35 },              // front
+        { dx: 0, dz: -0.9, rotY: 0, backOffset: -0.35 }             // back
+    ];
+
+    for (const offset of chairOffsets) {
+        // Chair
+        const chair = new THREE.Mesh(
+            new THREE.BoxGeometry(0.6, 0.6, 0.6),
+            libraryChairMaterial
+        );
+        chair.position.set(20.5 + offset.dx, 0.3, 8 + offset.dz);
+        scene.add(chair);
+
+        // Backrest
+        const backrest = new THREE.Mesh(
+            new THREE.BoxGeometry(0.6, 0.8, 0.1),
+            libraryChairMaterial
+        );
+
+        const backX = 20.5 + offset.dx + (offset.rotY === Math.PI / 2 ? offset.backOffset : 0);
+        const backZ = 8 + offset.dz + (offset.rotY === 0 ? offset.backOffset : 0);
+
+        backrest.position.set(backX, 0.9, backZ);
+        backrest.rotation.y = offset.rotY;
+        scene.add(backrest);
+    }
+
+    const libPosterTex = new THREE.TextureLoader().load('pic/library-poster.jpg');
+    const libPoster = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.2, 1.6),
+        new THREE.MeshStandardMaterial({ map: libPosterTex, side: THREE.DoubleSide })
+    );
+    libPoster.position.set(15.25, 2, 8); 
+    libPoster.rotation.y = Math.PI / 2;
+
+    scene.add(libPoster);
+
+
+
     // Create central staircase - moved away from spawn point
     createStaircase(-22.5, 0, -14, Math.PI);
 
@@ -2367,6 +3220,7 @@ socket.on('clueFailed', () => {
     }
 });
 
+
 // Event listeners for submit and close buttons are now handled in DOMContentLoaded above
 
 // Add Enter key support for cipher input
@@ -2376,6 +3230,7 @@ decryptionInput.addEventListener('keydown', (event) => {
         submitDecryption.click();
     }
 });
+
 
 // Create physical staircase that players can walk up
 function createStaircase(x, y, z) {
@@ -2399,7 +3254,8 @@ function createStaircase(x, y, z) {
         
         staircaseGroup.add(step);
     }
-    
+
+
     // Create handrails that follow the stair slope
     const railMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
     const railHeight = 2;
@@ -2522,7 +3378,13 @@ function createStaircase(x, y, z) {
 
 // Create second floor with rooms
 function createSecondFloor() {
-    const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x555555 });
+    const textureLoader = new THREE.TextureLoader();
+    const floorTexture = textureLoader.load('textures/floor.jpg'); // your JPG path
+    floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+    floorTexture.repeat.set(4, 4); // Adjust tiling if needed
+
+    const floorMaterial = new THREE.MeshStandardMaterial({ map: floorTexture });
+
     const stepHeight = 0.2;
     const numSteps = 20;
     const secondFloorHeight = numSteps * stepHeight;
@@ -2577,130 +3439,145 @@ function createSecondFloor() {
     createSecondFloorRoom(-15, secondFloorHeight, 15, 19, 6, 25, "Second Floor Art Room");
 
     // === Doors ===
-    createSecondFloorDoor(5, secondFloorHeight, -17.5, "Second Floor Library Door");
-    createSecondFloorDoor(20, secondFloorHeight, -17.5, "Second Floor Computer Lab Door");
-    createSecondFloorDoor(35, secondFloorHeight, -17.5, "Second Floor Study Hall Door");
+    createSecondFloorDoor(7.2, secondFloorHeight, -17.5, "Second Floor Library Door");
+    createSecondFloorDoor(19.2, secondFloorHeight, -17.5, "Second Floor Computer Lab Door");
+    createSecondFloorDoor(-4.2, secondFloorHeight, -17.5, "Second Floor Study Hall Door");
     createSecondFloorDoor(17, secondFloorHeight, 2.5, "Second Floor Conference Room Door");
     createSecondFloorDoor(2, secondFloorHeight, 2.5, "Second Floor Teacher's Lounge Door");
     createSecondFloorDoor(-15, secondFloorHeight, 2.5, "Second Floor Art Room Door");
 
     const loader = new THREE.GLTFLoader();
 
-   
-for (let i = 0; i < 3; i++) {
-  loader.load('models/bookshelf.glb', (gltf) => {
-    const shelf = gltf.scene;
-    shelf.scale.set(1, 1, 1);
-    shelf.position.set(1 + i * 3, secondFloorHeight, -21);
-    shelf.rotation.y = 0; 
-    scene.add(shelf);
-  });
+    for (let i = 0; i < 3; i++) {
+        loader.load('models/bookshelf.glb', (gltf) => {
+            const shelf = gltf.scene;
+            shelf.scale.set(1, 1, 1);
+            shelf.position.set(4 + i * 3, secondFloorHeight, -21);
+            shelf.rotation.y = 0; 
+            scene.add(shelf);
+        });
+    }
+
+    for (let i = 0; i < 3; i++) {
+        loader.load('models/computer_desk.glb', (gltf) => {
+            const desk = gltf.scene;
+            desk.scale.set(1, 1, 1);
+            desk.position.set(20 + i * 3, secondFloorHeight, -24);
+            desk.rotation.y = 0; 
+            scene.add(desk);
+        });
+    }
+
+    for (let i = 0; i < 2; i++) {
+        loader.load('models/table.glb', (gltf) => {
+            const table = gltf.scene;
+            table.scale.set(1.3, 1.3, 1.3);
+            table.position.set(-4.2, secondFloorHeight, -24 + i * 3);
+            table.rotation.y = Math.PI;
+            scene.add(table);
+        });
+
+        loader.load('models/chair.glb', (gltf) => {
+            const chair = gltf.scene;
+            chair.scale.set(0.7, 0.7, 0.7);
+            chair.position.set(-4.2, secondFloorHeight, -22 + i * 3 + 1.5);
+            chair.rotation.y = Math.PI;
+            scene.add(chair);
+        });
+    }
+
+    for (let i = 0; i < 2; i++) {
+        loader.load('models/table.glb', (gltf) => {
+            const table = gltf.scene;
+            table.scale.set(0.7, 0.7, 0.7);
+            table.position.set(35, secondFloorHeight, -25 + i * 3);
+            scene.add(table);
+        });
+
+        loader.load('models/chair.glb', (gltf) => {
+            const chair = gltf.scene;
+            chair.scale.set(0.7, 0.7, 0.7);
+            chair.position.set(35, secondFloorHeight, -25 + i * 3 - 1.5);
+            chair.rotation.y = 0;
+            scene.add(chair);
+        });
+    }
+
+    loader.load('models/conference_table.glb', (gltf) => {
+        const conferenceTable = gltf.scene;
+        conferenceTable.scale.set(0.5, 0.5, 0.5);
+        conferenceTable.position.set(22, secondFloorHeight, 15);
+        conferenceTable.rotation.y = -Math.PI / 2; 
+        scene.add(conferenceTable);
+    });
+
+    for (let i = 0; i < 2; i++) {
+        loader.load('models/lounge_chair.glb', (gltf) => {
+            const lounge = gltf.scene;
+            lounge.scale.set(2, 2, 2);
+            lounge.position.set(2 + i * 2, secondFloorHeight, 16);
+            lounge.rotation.y = Math.PI;
+            scene.add(lounge);
+        });
+    }
+
+    for (let i = 0; i < 2; i++) {
+        loader.load('models/art_table.glb', (gltf) => {
+            const artTable = gltf.scene;
+            artTable.scale.set(1.5, 1.5, 1.5);
+            artTable.position.set(-18 + i * 6, secondFloorHeight, 16);
+            artTable.rotation.y = Math.PI / 2; 
+            scene.add(artTable);
+        });
+    }
 }
 
-for (let i = 0; i < 3; i++) {
-  loader.load('models/computer_desk.glb', (gltf) => {
-    const desk = gltf.scene;
-    desk.scale.set(1, 1, 1);
-    desk.position.set(20 + i * 3, secondFloorHeight, -24);
-    desk.rotation.y = 0; 
-    scene.add(desk);
-  });
-}
-
-
-for (let i = 0; i < 2; i++) {
-  loader.load('models/table.glb', (gltf) => {
-    const table = gltf.scene;
-    table.scale.set(0.7, 0.7, 0.7);
-    table.position.set(35, secondFloorHeight, -25 + i * 3);
-    scene.add(table);
-  });
-
-  loader.load('models/chair.glb', (gltf) => {
-    const chair = gltf.scene;
-    chair.scale.set(0.7, 0.7, 0.7);
-    chair.position.set(35, secondFloorHeight, -25 + i * 3 - 1.5);
-    chair.rotation.y = 0;
-    scene.add(chair);
-  });
-}
-
-// conference
-loader.load('models/conference_table.glb', (gltf) => {
-  const conferenceTable = gltf.scene;
-  conferenceTable.scale.set(0.5, 0.5, 0.5);
-  conferenceTable.position.set(22, secondFloorHeight, 15);
-  conferenceTable.rotation.y = -Math.PI / 2; 
-  scene.add(conferenceTable);
-});
-
-// Teacher's Lounge chairs 
-for (let i = 0; i < 2; i++) {
-  loader.load('models/lounge_chair.glb', (gltf) => {
-    const lounge = gltf.scene;
-    lounge.scale.set(2, 2, 2);
-    lounge.position.set(2 + i * 2, secondFloorHeight, 16);
-    lounge.rotation.y = Math.PI; // turn around to face door at front
-    scene.add(lounge);
-  });
-}
-
-// Art Room work tables 
-for (let i = 0; i < 2; i++) {
-  loader.load('models/art_table.glb', (gltf) => {
-    const artTable = gltf.scene;
-    artTable.scale.set(1.5, 1.5, 1.5);
-    artTable.position.set(-18 + i * 6, secondFloorHeight, 16);
-    artTable.rotation.y = Math.PI / 2; 
-    scene.add(artTable);
-  });
-}
-}
 
 
 
 // Second floor rooms Function
 function createSecondFloorRoom(x, y, z, width, height, depth, name, rotationY = 0) {
-    const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x606060 });
-    
-    // Create a group to hold all room parts
+    const textureLoader = new THREE.TextureLoader();
+    const wallTexture = textureLoader.load('textures/2ndWall.jpg');
+    wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping;
+    wallTexture.repeat.set(2, 2); // Adjust tiling if needed
+
+    const wallMaterial = new THREE.MeshStandardMaterial({ map: wallTexture });
+
     const roomGroup = new THREE.Group();
-    
-    // Back wall
+
     const backWall = new THREE.Mesh(
         new THREE.BoxGeometry(width, height, 0.2),
         wallMaterial
     );
-    backWall.position.set(0, height/2, depth/2);
+    backWall.position.set(0, height / 2, depth / 2);
     backWall.castShadow = true;
     backWall.receiveShadow = true;
     roomGroup.add(backWall);
 
-    // Front wall with door opening
     const frontWallLeft = new THREE.Mesh(
-        new THREE.BoxGeometry((width-2.5)/2, height, 0.2),
+        new THREE.BoxGeometry((width - 2.5) / 2, height, 0.2),
         wallMaterial
     );
-    frontWallLeft.position.set(-width/4 - 0.625, height/2, -depth/2);
+    frontWallLeft.position.set(-width / 4 - 0.625, height / 2, -depth / 2);
     frontWallLeft.castShadow = true;
     frontWallLeft.receiveShadow = true;
     roomGroup.add(frontWallLeft);
 
     const frontWallRight = new THREE.Mesh(
-        new THREE.BoxGeometry((width-2.5)/2, height, 0.2),
+        new THREE.BoxGeometry((width - 2.5) / 2, height, 0.2),
         wallMaterial
     );
-    frontWallRight.position.set(width/4 + 0.625, height/2, -depth/2);
+    frontWallRight.position.set(width / 4 + 0.625, height / 2, -depth / 2);
     frontWallRight.castShadow = true;
     frontWallRight.receiveShadow = true;
     roomGroup.add(frontWallRight);
 
-    // Side walls
     const leftWall = new THREE.Mesh(
         new THREE.BoxGeometry(0.2, height, depth),
         wallMaterial
     );
-    leftWall.position.set(-width/2, height/2, 0);
+    leftWall.position.set(-width / 2, height / 2, 0);
     leftWall.castShadow = true;
     leftWall.receiveShadow = true;
     roomGroup.add(leftWall);
@@ -2709,65 +3586,66 @@ function createSecondFloorRoom(x, y, z, width, height, depth, name, rotationY = 
         new THREE.BoxGeometry(0.2, height, depth),
         wallMaterial
     );
-    rightWall.position.set(width/2, height/2, 0);
+    rightWall.position.set(width / 2, height / 2, 0);
     rightWall.castShadow = true;
     rightWall.receiveShadow = true;
     roomGroup.add(rightWall);
 
-    // Position and rotate the entire room group
     roomGroup.position.set(x, y, z);
     roomGroup.rotation.y = rotationY;
     scene.add(roomGroup);
 
-    // Add walls to collision detection for second floor rooms (need to calculate rotated positions)
     const cos = Math.cos(rotationY);
     const sin = Math.sin(rotationY);
-    
+
     const wallPositions = [
-        { localX: 0, localZ: depth/2, width: width, depth: 0.2 }, // back wall
-        { localX: -width/4 - 1.25, localZ: -depth/2, width: (width-2.5)/2, depth: 0.2 }, // front left
-        { localX: width/4 + 1.25, localZ: -depth/2, width: (width-2.5)/2, depth: 0.2 }, // front right
-        { localX: -width/2, localZ: 0, width: 0.2, depth: depth }, // left wall
-        { localX: width/2, localZ: 0, width: 0.2, depth: depth } // right wall
+        { localX: 0, localZ: depth / 2, width: width, depth: 0.2 },
+        { localX: -width / 4 - 1.25, localZ: -depth / 2, width: (width - 2.5) / 2, depth: 0.2 },
+        { localX: width / 4 + 1.25, localZ: -depth / 2, width: (width - 2.5) / 2, depth: 0.2 },
+        { localX: -width / 2, localZ: 0, width: 0.2, depth: depth },
+        { localX: width / 2, localZ: 0, width: 0.2, depth: depth }
     ];
-    
+
     wallPositions.forEach(wall => {
         const rotatedX = wall.localX * cos - wall.localZ * sin;
         const rotatedZ = wall.localX * sin + wall.localZ * cos;
-        
+
         walls.push({
             x: x + rotatedX,
             z: z + rotatedZ,
             width: wall.width,
             depth: wall.depth,
-            height: y + height, // Include the floor height
-            isSecondFloorRoom: true // Mark as second floor room wall
+            height: y + height,
+            isSecondFloorRoom: true
         });
     });
 }
 
-// Function to create second floor doors
 function createSecondFloorDoor(x, y, z, name) {
-    const doorMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 }); // Darker brown for second floor doors
-    
-    // Create door geometry
+    const textureLoader = new THREE.TextureLoader();
+    const doorTexture = textureLoader.load('textures/2ndDoor.jpg');
+    doorTexture.wrapS = doorTexture.wrapT = THREE.RepeatWrapping;
+    doorTexture.repeat.set(1, 1);
+
+    const doorMaterial = new THREE.MeshStandardMaterial({ map: doorTexture });
+
     const doorGeometry = new THREE.BoxGeometry(2.5, 4, 0.3);
     const door = new THREE.Mesh(doorGeometry, doorMaterial);
     door.position.set(x, y + 2, z);
     door.castShadow = true;
     door.receiveShadow = true;
-    
-    
+
     door.isOpen = false;
     door.originalPosition = { x: x, y: y + 2, z: z };
-    door.openPosition = { x: x + 2.5, y: y + 2, z: z }; // Slide to the right when open
+    door.openPosition = { x: x + 2.5, y: y + 2, z: z };
     door.name = name;
     door.isAnimating = false;
-    door.isSecondFloorDoor = true; 
-    
+    door.isSecondFloorDoor = true;
+
     scene.add(door);
     doors.push(door);
 }
+
 
 // Helper function to get stair height at player position
 function getStairHeight(x, z) {
