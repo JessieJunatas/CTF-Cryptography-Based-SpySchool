@@ -21,7 +21,7 @@ let doors = [];
 let currentClueId = null;
 
 const speed = 1.0; // slower movement speed for better control
-const interactionDistance = 3;
+const interactionDistance = 1.8;
 
 let groupName = '';
 let isKiller = false;
@@ -1044,7 +1044,7 @@ function init() {
     player.receiveShadow = true;
     playerContainer.add(player);
     
-    // Add character model to the player container (but make it invisible for first-person)
+    // character model to the player container ( make it invisible for first-person)
     const characterModel = createBasicPlayerModel(isKiller, false);
     characterModel.position.set(0, 0, 0);
     characterModel.visible = false; // Hide first-person player's own model to prevent blocking view
@@ -1063,10 +1063,131 @@ function init() {
     createDoors();
 
     
-    // Add all wall-mounted letter clues (both first and second floor) using unified logic
-    addWallMountedLetter(-7, 2.5, 10, 1, 'east'); // Cafeteria - back wall (inside the room)
-    addWallMountedLetter(11, 2.5, 15, 2, 'south');     // Classroom A - back wall  
-    addWallMountedLetter(5, 2.5, 11, 3, 'west');   // Office - back wall
+   // first floor
+
+    const fontLoader = new THREE.FontLoader();
+
+
+
+    // Clue "A" in Cafeteria
+
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+
+        const textGeometry = new THREE.TextGeometry('A', {
+
+            font: font,
+
+            size: 0.2,
+
+            height: 0.01,
+
+            curveSegments: 6
+
+        });
+
+
+
+        const textMaterial = new THREE.MeshStandardMaterial({color: 0x444444, transparent: true, opacity: 0.25});
+
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+
+
+        textMesh.position.set(-13.9, 1.42, 14.7);      // slightly above the pot lid
+
+        textMesh.rotation.x = -Math.PI / 2;           // rotate to lay flat facing up
+
+
+
+        textMesh.userData = { clueId: 1 };
+
+        scene.add(textMesh);
+
+        interactableObjects.push(textMesh);
+
+    });
+
+
+
+
+
+    // Clue "B" in Classroom A
+
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+
+        const textGeometry = new THREE.TextGeometry('B', {
+
+            font: font,
+
+            size: 0.2,
+
+            height: 0.01,
+
+            curveSegments: 6
+
+        });
+
+
+
+        const textMaterial = new THREE.MeshStandardMaterial({ color: 0x444444, transparent: true, opacity: 0.2 });
+
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+
+
+        textMesh.position.set(9.5, 2.4, 15.7); // adjust to wall
+
+        textMesh.rotation.y = Math.PI; // face into classroom
+
+
+
+        textMesh.userData = { clueId: 2 };
+
+        scene.add(textMesh);
+
+        interactableObjects.push(textMesh);
+
+    });
+
+
+
+    // Clue "C" in Principal Office
+
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+
+        const textGeometry = new THREE.TextGeometry('C', {
+
+            font: font,
+
+            size: 0.2,
+
+            height: 0.01,
+
+            curveSegments: 6
+
+        });
+
+
+
+        const textMaterial = new THREE.MeshStandardMaterial({ color: 0x444444, transparent: true, opacity: 0.4 });
+
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+
+
+        textMesh.position.set(6, 0.2, 6);   // X/Z should match your sofa backrest
+
+        textMesh.rotation.y = Math.PI / 2;     // rotate to face toward sofa
+
+
+
+        textMesh.userData = { clueId: 3 };
+
+        scene.add(textMesh);
+
+        interactableObjects.push(textMesh);
+
+    });
     
     // Second floor clues - using same logic as first floor
     const secondFloorHeight = 20 * 0.2; // Calculate second floor height (4 units)
@@ -1217,6 +1338,11 @@ let pitch = 0;
 let yaw = 0;
 let flashlightSystem;  // Flashlight system variable
 
+// FPS limiting variables
+const TARGET_FPS = 40;
+const FRAME_INTERVAL = 1000 / TARGET_FPS; // 33.33ms for 30 FPS
+let lastFrameTime = 0;
+
 function onMouseMove(event) {
     // Only process mouse movement if pointer is locked
     if (document.pointerLockElement === document.getElementById('gameCanvas')) {
@@ -1258,9 +1384,15 @@ function onMouseMove(event) {
     }
 }
 
-function animate() {
+function animate(currentTime = 0) {
     requestAnimationFrame(animate);
 
+    // FPS limiting - only render if enough time has passed
+    if (currentTime - lastFrameTime < FRAME_INTERVAL) {
+        return; // Skip this frame
+    }
+    
+    lastFrameTime = currentTime;
     const delta = clock.getDelta();
 
     // Update all player name sprites to face camera and animation mixers
@@ -3177,12 +3309,8 @@ function showNotification(message, type = 'info') {
 }
 
 function displayCipherKey() {
-    cipherKeyDisplay.innerHTML = '';
-    for (let letter in cipherKey) {
-        const div = document.createElement('div');
-        div.textContent = `${letter} → ${cipherKey[letter]}`;
-        cipherKeyDisplay.appendChild(div);
-    }
+    // Use the enhanced cipher key display function from ui.js
+    displayCipherKeyGrid(cipherKey);
 }
 
 // Add error message handler for wrong solutions

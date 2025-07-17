@@ -273,13 +273,72 @@ body {
     background: rgba(255, 255, 255, 0.1);
     padding: 1rem;
     border-radius: 5px;
+    margin-bottom: 1.5rem;
+}
+
+.cipher-key label {
+    color: #00ff00;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    display: block;
 }
 
 #cipherKeyDisplay {
     display: grid;
-    grid-template-columns: repeat(13, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
     gap: 0.5rem;
     margin-top: 0.5rem;
+    max-width: 100%;
+}
+
+.cipher-pair {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.8rem 0.2rem;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffffff;
+    border: 2px solid rgba(0, 255, 0, 0.5);
+    transition: all 0.2s ease;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cipher-pair:hover {
+    background: rgba(0, 255, 0, 0.2);
+    border-color: #00ff00;
+    transform: scale(1.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #cipherKeyDisplay {
+        grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+        gap: 0.3rem;
+    }
+    
+    .cipher-pair {
+        padding: 0.6rem 0.1rem;
+        font-size: 0.9rem;
+        min-height: 45px;
+    }
+}
+
+@media (max-width: 480px) {
+    #cipherKeyDisplay {
+        grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
+        gap: 0.2rem;
+    }
+    
+    .cipher-pair {
+        padding: 0.5rem 0.1rem;
+        font-size: 0.8rem;
+        min-height: 40px;
+    }
 }
 
 .decryption-area input {

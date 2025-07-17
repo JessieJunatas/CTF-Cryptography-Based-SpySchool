@@ -45,7 +45,7 @@ function updatePlayerList(players) {
     }
 }
 
-// Cipher key display
+// Cipher key display - simple and clear
 function displayCipherKeyGrid(cipherKey) {
     const cipherKeyDisplay = document.getElementById('cipherKeyDisplay');
     if (cipherKeyDisplay) {
@@ -55,11 +55,6 @@ function displayCipherKeyGrid(cipherKey) {
             const keyPair = document.createElement('div');
             keyPair.className = 'cipher-pair';
             keyPair.textContent = `${letter} → ${cipherKey[letter]}`;
-            keyPair.style.padding = '0.2rem';
-            keyPair.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            keyPair.style.borderRadius = '3px';
-            keyPair.style.textAlign = 'center';
-            keyPair.style.fontSize = '0.9rem';
             cipherKeyDisplay.appendChild(keyPair);
         }
     }
