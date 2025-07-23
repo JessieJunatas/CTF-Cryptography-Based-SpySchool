@@ -1339,7 +1339,7 @@ let yaw = 0;
 let flashlightSystem;  // Flashlight system variable
 
 // FPS limiting variables
-const TARGET_FPS = 40;
+const TARGET_FPS = 45;
 const FRAME_INTERVAL = 1000 / TARGET_FPS; // 33.33ms for 30 FPS
 let lastFrameTime = 0;
 
@@ -1625,14 +1625,14 @@ function checkInteraction() {
         }
     }
     
-    // Check for door interaction
+        // Check for door interaction
     for (let door of doors) {
-        // Skip second floor doors if player is on first floor
+        // More lenient height checking for second floor doors
         if (door.isSecondFloorDoor && player.position.y < 3.0) {
             continue; // Don't check second floor doors for first floor players
         }
         
-        // Skip first floor doors if player is on second floor
+        // Skip first floor doors if player is clearly on second floor
         if (!door.isSecondFloorDoor && player.position.y > 3.0) {
             continue; // Don't check first floor doors for second floor players
         }
@@ -1926,15 +1926,15 @@ function checkWallCollision(playerX, playerZ, playerRadius) {
     // Check collision with closed doors
     for (const door of doors) {
         if (!door.isOpen) {
-            // Skip second floor doors if player is on first floor
-            if (door.isSecondFloorDoor && playerHeight < 3.0) {
-                continue; // Don't check second floor doors for first floor players
-            }
-            
-            // Skip first floor doors if player is on second floor
-            if (!door.isSecondFloorDoor && playerHeight > 3.0) {
-                continue; // Don't check first floor doors for second floor players
-            }
+        // Skip second floor doors if player is on first floor
+        if (door.isSecondFloorDoor && playerHeight < 2.5) {
+            continue; // Don't check second floor doors for first floor players
+        }
+        
+        // Skip first floor doors if player is on second floor
+        if (!door.isSecondFloorDoor && playerHeight > 2.5) {
+            continue; // Don't check first floor doors for second floor players
+        }
             
             const doorLeft = door.position.x - 1.1;
             const doorRight = door.position.x + 1.1;
@@ -2156,7 +2156,7 @@ const floorMaterial = new THREE.MeshStandardMaterial({
     scene.add(floor);
 
     // Create rooms
-    createRoom(18, 0, -14, 10, 4, 10, Math.PI); // Library 
+    createRoom(18, 0, -14, 10, 4, 10, Math.PI); // Locker room
     createRoom(8, 0, -14, 10, 4, 10, Math.PI); // Classroom B
     createRoom(-1, 0, -14, 10, 4, 10, Math.PI); // Classroom C
     createRoom(11, 0, 10, 8, 4, 12); // Classroom A
@@ -3474,7 +3474,7 @@ function createStaircase(x, y, z) {
     // Left handrail collision (with staircase rotation applied)
     for (let i = 0; i < numSteps; i++) {
         const stepZ = i * stepDepth - (numSteps * stepDepth) / 2;
-        const rotatedStepZ = -stepZ; // Apply 180 degree rotation
+        const rotatedStepZ = -stepZ;
         const stepY = (i + 1) * stepHeight;
         
         walls.push({
@@ -3518,18 +3518,18 @@ function createSecondFloor() {
     const secondFloorHeight = numSteps * stepHeight;
     const floorThickness = 0.2;
 
-    const secondFloorWidth = 55;
+    const secondFloorWidth = 42.9;
     const secondFloorDepth = 25;
 
     const secondFloorGeometry = new THREE.BoxGeometry(secondFloorWidth, floorThickness, secondFloorDepth);
     const secondFloor = new THREE.Mesh(secondFloorGeometry, floorMaterial);
-    secondFloor.position.set(10, secondFloorHeight + floorThickness / 2, -16.5);
+    secondFloor.position.set(3.9, secondFloorHeight + floorThickness / 2, -16.5);
     secondFloor.castShadow = true;
     secondFloor.receiveShadow = true;
     scene.add(secondFloor);
 
     walls.push({
-        x: 10,
+        x: 3.9,
         z: -16.5,
         width: secondFloorWidth,
         depth: secondFloorDepth,
@@ -3538,19 +3538,19 @@ function createSecondFloor() {
         isSecondFloor: true
     });
 
-    const libraryPlatformWidth = 83;
+    const libraryPlatformWidth = 51.2;
     const libraryPlatformDepth = 30;
 
     const libraryPlatformGeometry = new THREE.BoxGeometry(libraryPlatformWidth, floorThickness, libraryPlatformDepth);
     const libraryPlatform = new THREE.Mesh(libraryPlatformGeometry, floorMaterial);
-    libraryPlatform.position.set(-15, secondFloorHeight + floorThickness / 2, 10);
+    libraryPlatform.position.set(0.5, secondFloorHeight + floorThickness / 2, 11);
     libraryPlatform.castShadow = true;
     libraryPlatform.receiveShadow = true;
     scene.add(libraryPlatform);
 
     walls.push({
-        x: -15,
-        z: 10,
+        x: 0.5,  
+        z: 11,   
         width: libraryPlatformWidth,
         depth: libraryPlatformDepth,
         height: secondFloorHeight,
@@ -3559,20 +3559,91 @@ function createSecondFloor() {
     });
 
     // === Rooms ===
-    createSecondFloorRoom(7.2, secondFloorHeight, -21.5, 12, 6, 8, "Second Floor Library", Math.PI);
-    createSecondFloorRoom(19.2, secondFloorHeight, -21.5, 12, 6, 8, "Second Floor Computer Lab", Math.PI);
-    createSecondFloorRoom(-4.2, secondFloorHeight, -21.5, 12, 6, 8, "Second Floor Study Hall", Math.PI);
-    createSecondFloorRoom(17, secondFloorHeight, 15, 15, 6, 25, "Second Floor Conference Room");
-    createSecondFloorRoom(2, secondFloorHeight, 15, 15, 6, 25, "Second Floor Teacher's Lounge");
-    createSecondFloorRoom(-15, secondFloorHeight, 15, 19, 6, 25, "Second Floor Art Room");
+    createSecondFloorRoom(7.2, secondFloorHeight + 0.2, -21.5, 12, 4, 8, "Second Floor Library", Math.PI);
+    createSecondFloorRoom(19.2, secondFloorHeight + 0.2, -21.5, 12, 4, 8, "Second Floor Computer Lab", Math.PI);
+    createSecondFloorRoom(-4.2, secondFloorHeight + 0.2, -21.5, 12, 4, 8, "Second Floor Study Hall", Math.PI);
+    createSecondFloorRoom(17, secondFloorHeight + 0.2, 15, 15, 4, 25, "Second Floor Conference Room");
+    createSecondFloorRoom(2, secondFloorHeight + 0.2, 15, 15, 4, 25, "Second Floor Teacher's Lounge");
+    createSecondFloorRoom(-15, secondFloorHeight + 0.2, 15, 19, 4, 25, "Second Floor Art Room");
 
     // === Doors ===
-    createSecondFloorDoor(7.2, secondFloorHeight, -17.5, "Second Floor Library Door");
-    createSecondFloorDoor(19.2, secondFloorHeight, -17.5, "Second Floor Computer Lab Door");
-    createSecondFloorDoor(-4.2, secondFloorHeight, -17.5, "Second Floor Study Hall Door");
-    createSecondFloorDoor(17, secondFloorHeight, 2.5, "Second Floor Conference Room Door");
-    createSecondFloorDoor(2, secondFloorHeight, 2.5, "Second Floor Teacher's Lounge Door");
-    createSecondFloorDoor(-15, secondFloorHeight, 2.5, "Second Floor Art Room Door");
+    createSecondFloorDoor(7.2, secondFloorHeight + 0.2, -17.5, "Second Floor Library Door");
+    createSecondFloorDoor(19.2, secondFloorHeight + 0.2, -17.5, "Second Floor Computer Lab Door");
+    createSecondFloorDoor(-4.2, secondFloorHeight + 0.2, -17.5, "Second Floor Study Hall Door");
+    createSecondFloorDoor(17, secondFloorHeight + 0.2, 2.5, "Second Floor Conference Room Door");
+    createSecondFloorDoor(2, secondFloorHeight + 0.2, 2.5, "Second Floor Teacher's Lounge Door");
+    createSecondFloorDoor(-15, secondFloorHeight + 0.2, 2.5, "Second Floor Art Room Door");
+
+    // === Third Level Platform (Above Second Floor Rooms) ===
+    const roomHeight = 4.3; // Height of second floor rooms
+    const thirdLevelHeight = secondFloorHeight + roomHeight; // Platform at ceiling level of second floor rooms
+    
+    // Create platform above the main second floor area
+    const thirdLevelPlatformWidth = 42.9;
+    const thirdLevelPlatformDepth = 25;
+    
+    const thirdLevelPlatformGeometry = new THREE.BoxGeometry(thirdLevelPlatformWidth, floorThickness, thirdLevelPlatformDepth);
+    const thirdLevelPlatform = new THREE.Mesh(thirdLevelPlatformGeometry, floorMaterial);
+    thirdLevelPlatform.position.set(3.9, thirdLevelHeight + floorThickness / 2, -16.5);
+    thirdLevelPlatform.castShadow = true;
+    thirdLevelPlatform.receiveShadow = true;
+    scene.add(thirdLevelPlatform);
+    
+    // Add collision detection for third level platform
+    walls.push({
+        x: 3.9,
+        z: -16.5,
+        width: thirdLevelPlatformWidth,
+        depth: thirdLevelPlatformDepth,
+        height: thirdLevelHeight,
+        isStair: true,
+        isThirdLevel: true
+    });
+    
+    // Create platform above the library area as well
+    const thirdLevelLibraryPlatformWidth = 51.2;
+    const thirdLevelLibraryPlatformDepth = 30;
+    
+    const thirdLevelLibraryPlatformGeometry = new THREE.BoxGeometry(thirdLevelLibraryPlatformWidth, floorThickness, thirdLevelLibraryPlatformDepth);
+    const thirdLevelLibraryPlatform = new THREE.Mesh(thirdLevelLibraryPlatformGeometry, floorMaterial);
+    thirdLevelLibraryPlatform.position.set(0.5, thirdLevelHeight + floorThickness / 2, 11);
+    thirdLevelLibraryPlatform.castShadow = true;
+    thirdLevelLibraryPlatform.receiveShadow = true;
+    scene.add(thirdLevelLibraryPlatform);
+    
+    // Add collision detection for third level library platform
+    walls.push({
+        x: 0.5,
+        z: 11,
+        width: thirdLevelLibraryPlatformWidth,
+        depth: thirdLevelLibraryPlatformDepth,
+        height: thirdLevelHeight,
+        isStair: true,
+        isThirdLevel: true
+    });
+    
+    // === Third Level Platform Above Staircase ===
+    // Create platform above the staircase area
+    const staircaseThirdLevelWidth = 7.8;
+    const staircaseThirdLevelDepth = 22;
+    
+    const staircaseThirdLevelGeometry = new THREE.BoxGeometry(staircaseThirdLevelWidth, floorThickness, staircaseThirdLevelDepth);
+    const staircaseThirdLevelPlatform = new THREE.Mesh(staircaseThirdLevelGeometry, floorMaterial);
+    staircaseThirdLevelPlatform.position.set(-21.4, thirdLevelHeight + floorThickness / 2, -15);
+    staircaseThirdLevelPlatform.castShadow = true
+    staircaseThirdLevelPlatform.receiveShadow = true;
+    scene.add(staircaseThirdLevelPlatform);
+    
+    // Add collision detection for staircase third level platform
+    walls.push({
+        x: -21.4,  // Fixed: Match the actual staircase third level platform position
+        z: -15,    // Fixed: Match the actual staircase third level platform position
+        width: staircaseThirdLevelWidth,
+        depth: staircaseThirdLevelDepth,
+        height: thirdLevelHeight,
+        isStair: true,
+        isThirdLevel: true
+    });
 
     const loader = new THREE.GLTFLoader();
 
@@ -3791,6 +3862,14 @@ function getStairHeight(x, z) {
                 if (wall.isSecondFloor) {
                     // Only use second floor platforms if player is already high enough
                     if (currentPlayerHeight >= 3.5) {
+                        return wall.height;
+                    }
+                    continue;
+                }
+                
+                if (wall.isThirdLevel) {
+                    // Only use third level platforms if player is already high enough
+                    if (currentPlayerHeight >= 7.5) {
                         return wall.height;
                     }
                     continue;
