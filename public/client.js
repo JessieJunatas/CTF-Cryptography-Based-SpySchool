@@ -1056,7 +1056,7 @@ function init() {
     scene.add(playerContainer);
     players[socket.id] = playerContainer;
 
-    // Create flashlight system
+    // flashlight system
     flashlightSystem = createFlashlight();
 
     // Add doors to each room
@@ -1064,136 +1064,122 @@ function init() {
 
     
    // first floor
-
     const fontLoader = new THREE.FontLoader();
-
-
-
     // Clue "A" in Cafeteria
-
     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-
         const textGeometry = new THREE.TextGeometry('A', {
-
             font: font,
-
             size: 0.2,
-
             height: 0.01,
-
             curveSegments: 6
-
         });
-
-
-
         const textMaterial = new THREE.MeshStandardMaterial({color: 0x444444, transparent: true, opacity: 0.25});
-
         const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-
-
-
-        textMesh.position.set(-13.9, 1.42, 14.7);      // slightly above the pot lid
-
-        textMesh.rotation.x = -Math.PI / 2;           // rotate to lay flat facing up
-
-
-
+        textMesh.position.set(-13.9, 1.42, 14.7);  
+        textMesh.rotation.x = -Math.PI / 2;    
         textMesh.userData = { clueId: 1 };
-
         scene.add(textMesh);
-
         interactableObjects.push(textMesh);
-
     });
-
-
-
-
 
     // Clue "B" in Classroom A
-
     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-
         const textGeometry = new THREE.TextGeometry('B', {
-
             font: font,
-
             size: 0.2,
-
             height: 0.01,
-
             curveSegments: 6
-
         });
-
-
-
         const textMaterial = new THREE.MeshStandardMaterial({ color: 0x444444, transparent: true, opacity: 0.2 });
-
         const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-
-
-
         textMesh.position.set(9.5, 2.4, 15.7); // adjust to wall
-
         textMesh.rotation.y = Math.PI; // face into classroom
-
-
-
         textMesh.userData = { clueId: 2 };
-
         scene.add(textMesh);
-
         interactableObjects.push(textMesh);
-
     });
-
-
-
     // Clue "C" in Principal Office
-
     fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-
         const textGeometry = new THREE.TextGeometry('C', {
-
             font: font,
-
             size: 0.2,
-
             height: 0.01,
-
             curveSegments: 6
-
         });
-
-
-
         const textMaterial = new THREE.MeshStandardMaterial({ color: 0x444444, transparent: true, opacity: 0.4 });
-
         const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-
-
-
-        textMesh.position.set(6, 0.2, 6);   // X/Z should match your sofa backrest
-
+        textMesh.position.set(6, 0.2, 6); 
         textMesh.rotation.y = Math.PI / 2;     // rotate to face toward sofa
-
-
-
         textMesh.userData = { clueId: 3 };
-
         scene.add(textMesh);
-
         interactableObjects.push(textMesh);
-
     });
     
     // Second floor clues - using same logic as first floor
     const secondFloorHeight = 20 * 0.2; // Calculate second floor height (4 units)
-    addWallMountedLetter(5, secondFloorHeight + 2.5, -20, 4, 'north'); // Second Floor Library - back wall
-    addWallMountedLetter(24, secondFloorHeight + 2.5, 16, 5, 'east'); // Conference Room - left wall
-    addWallMountedLetter(-24.2, secondFloorHeight + 2.5, 15.5, 6, 'west'); // Art Room - back wall
+    // Clue "D" in Second Floor Library
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+        const textGeometry = new THREE.TextGeometry('D', {
+            font: font,
+            size: 0.25,
+            height: 0.01,
+            curveSegments: 6
+        });
+
+        const textMaterial = new THREE.MeshStandardMaterial({ color: 0x5e3b19, transparent: true, opacity: 0.3 });
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+        textMesh.position.set(5.2, secondFloorHeight + 1.11, -21.5); 
+        textMesh.rotation.x = -Math.PI / 2;
+        textMesh.userData = { clueId: 4 };
+        scene.add(textMesh);
+        interactableObjects.push(textMesh);
+    });
+
+
+    // Clue "E" in Second Floor Conference Room
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+        const textGeometry = new THREE.TextGeometry('E', {
+            font: font,
+            size: 0.2,
+            height: 0.01,
+            curveSegments: 6
+        });
+
+        const textMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513, transparent: true, opacity: 0.8 });
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+        textMesh.position.set(24.3, secondFloorHeight + 2.0, 23); // forward from wall
+        textMesh.rotation.y = -Math.PI / 2; // facing west
+
+        textMesh.userData = { clueId: 5 };
+        scene.add(textMesh);
+        interactableObjects.push(textMesh);
+    });
+
+    // Clue "F" in Art Room
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+        const textGeometry = new THREE.TextGeometry('F', {
+            font: font,
+            size: 0.2,
+            height: 0.01,
+            curveSegments: 6
+        });
+
+        const textMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffd54f,
+            transparent: true,
+            opacity: 0.4
+        });
+
+        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+
+        // Place clue F on the floor near the artwork inside the Art Room
+        textMesh.position.set(-24.2, secondFloorHeight + 0.2, 17.5);
+        textMesh.rotation.x = -Math.PI / 2;
+
+        textMesh.userData = { clueId: 6 }; 
+        scene.add(textMesh);
+        interactableObjects.push(textMesh);
+    });
 
 
     // Event listeners
@@ -3729,10 +3715,946 @@ function createSecondFloor() {
             scene.add(artTable);
         });
     }
+
+// Art Room Furnitures
+    const artRoomY = secondFloorHeight; // Y position for the second floor
+    const artRoomX = -15; // X position from createSecondFloorRoom
+    const artRoomZ = 15;  // Z position from createSecondFloorRoom
+
+    // Art supply cabinet (big)
+    const cabinet = new THREE.Mesh(
+        new THREE.BoxGeometry(1.5, 2.0, 0.6),
+        new THREE.MeshStandardMaterial({ color: 0x8b7765 })
+    );
+    cabinet.position.set(artRoomX - 8, artRoomY + 1.0, artRoomZ + 1);
+    scene.add(cabinet);
+
+    // Storage shelf (big)
+    const shelf = new THREE.Mesh(
+        new THREE.BoxGeometry(2.0, 1.8, 0.4),
+        new THREE.MeshStandardMaterial({ color: 0xc2b280 })
+    );
+    shelf.position.set(artRoomX + 7, artRoomY + 0.9, artRoomZ + 3.5);
+    scene.add(shelf);
+    // Add 4 shelf levels
+    for (let i = 0; i < 4; i++) {
+        const shelfLevel = new THREE.Mesh(
+            new THREE.BoxGeometry(1.9, 0.07, 0.36),
+            new THREE.MeshStandardMaterial({ color: 0x9e9e9e })
+        );
+        shelfLevel.position.set(shelf.position.x, artRoomY + 0.3 + i * 0.45, shelf.position.z);
+        scene.add(shelfLevel);
+    }
+
+    // Easel (tall)
+    const easelHeight = 1.7;
+    const easelLeg1 = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.06, 0.06, easelHeight, 12),
+        new THREE.MeshStandardMaterial({ color: 0xdeae87 })
+    );
+    easelLeg1.position.set(artRoomX + 2, artRoomY + easelHeight / 2, artRoomZ + 5.5);
+    easelLeg1.rotation.z = Math.PI / 18;
+    scene.add(easelLeg1);
+    const easelLeg2 = easelLeg1.clone();
+    easelLeg2.position.x += 0.6;
+    easelLeg2.rotation.z = -Math.PI / 18;
+    scene.add(easelLeg2);
+    const easelCross = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.045, 0.045, 0.7, 12),
+        new THREE.MeshStandardMaterial({ color: 0xdeae87 })
+    );
+    easelCross.position.set(artRoomX + 2.3, artRoomY + 0.7, artRoomZ + 5.5);
+    easelCross.rotation.x = Math.PI / 2;
+    scene.add(easelCross);
+    // Canvas
+    const canvasBoard = new THREE.Mesh(
+        new THREE.BoxGeometry(0.7, 1.0, 0.06),
+        new THREE.MeshStandardMaterial({ color: 0xffffff })
+    );
+    canvasBoard.position.set(artRoomX + 2.3, artRoomY + 1.1, artRoomZ + 5.5 + 0.09);
+    scene.add(canvasBoard);
+
+    // Paint bucket (big)
+    const bucket = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.18, 0.18, 0.4, 20),
+        new THREE.MeshStandardMaterial({ color: 0x2196f3 })
+    );
+    bucket.position.set(artRoomX + 4.5, artRoomY + 0.2, artRoomZ + 0.5);
+    scene.add(bucket);
+    // Handle
+    const handle = new THREE.Mesh(
+        new THREE.TorusGeometry(0.18, 0.02, 10, 32, Math.PI),
+        new THREE.MeshStandardMaterial({ color: 0x888888 })
+    );
+    handle.position.set(bucket.position.x, bucket.position.y + 0.2, bucket.position.z);
+    handle.rotation.x = Math.PI / 2;
+    scene.add(handle);
+
+    // Sculpture stand (tall)
+    const stand = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.28, 0.28, 1.1, 20),
+        new THREE.MeshStandardMaterial({ color: 0xeeeeee })
+    );
+    stand.position.set(artRoomX + 6, artRoomY + 0.55, artRoomZ + 1.2);
+    scene.add(stand);
+    // Sculpture (big sphere)
+    const sculpture = new THREE.Mesh(
+        new THREE.SphereGeometry(0.4, 24, 24),
+        new THREE.MeshStandardMaterial({ color: 0xd4af37 })
+    );
+    sculpture.position.set(stand.position.x, stand.position.y + 0.65, stand.position.z);
+    scene.add(sculpture);
+
+    // Large storage locker
+    const locker = new THREE.Mesh(
+        new THREE.BoxGeometry(1.2, 2.1, 0.7),
+        new THREE.MeshStandardMaterial({ color: 0x607d8b })
+    );
+    locker.position.set(artRoomX - 8, artRoomY + 1.05, artRoomZ + 4.5);
+    scene.add(locker);
+
+    // Stack of canvases
+    for (let i = 0; i < 4; i++) {
+        const canvasStack = new THREE.Mesh(
+            new THREE.BoxGeometry(0.7, 0.04, 1.0),
+            new THREE.MeshStandardMaterial({ color: 0xf5f5dc })
+        );
+        canvasStack.position.set(artRoomX + 1.2, artRoomY + 0.05 + i * 0.045, artRoomZ + 0.7);
+        canvasStack.rotation.y = Math.PI / 16 * i;
+        scene.add(canvasStack);
+    }
+
+    // Paint tube box
+    const paintBox = new THREE.Mesh(
+        new THREE.BoxGeometry(0.5, 0.18, 0.35),
+        new THREE.MeshStandardMaterial({ color: 0x795548 })
+    );
+    paintBox.position.set(artRoomX + 5.5, artRoomY + 0.09, artRoomZ + 4.5);
+    scene.add(paintBox);
+    // Paint tubes (cylinders)
+    for (let i = 0; i < 5; i++) {
+        const tube = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.03, 0.03, 0.22, 12),
+            new THREE.MeshStandardMaterial({ color: [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff][i] })
+        );
+        tube.position.set(paintBox.position.x - 0.15 + i * 0.075, paintBox.position.y + 0.12, paintBox.position.z);
+        tube.rotation.z = Math.PI / 2;
+        scene.add(tube);
+    }
+
+    // Rolling cart
+    const cart = new THREE.Mesh(
+        new THREE.BoxGeometry(0.9, 0.18, 0.6),
+        new THREE.MeshStandardMaterial({ color: 0xbdbdbd })
+    );
+    cart.position.set(artRoomX + 3, artRoomY + 0.09, artRoomZ + 6.5);
+    scene.add(cart);
+    // Cart wheels
+    for (let i = 0; i < 4; i++) {
+        const wheel = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.07, 0.07, 0.05, 16),
+            new THREE.MeshStandardMaterial({ color: 0x333333 })
+        );
+        wheel.position.set(
+            cart.position.x + (i < 2 ? -0.35 : 0.35),
+            cart.position.y - 0.11,
+            cart.position.z + (i % 2 === 0 ? -0.22 : 0.22)
+        );
+        wheel.rotation.z = Math.PI / 2;
+        scene.add(wheel);
+    }
+
+    // Trash bin
+    const trash = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.25, 0.3, 0.7, 20),
+        new THREE.MeshStandardMaterial({ color: 0x616161 })
+    );
+    trash.position.set(artRoomX + 7.5, artRoomY + 0.35, artRoomZ + 0.5);
+    scene.add(trash);
+
+    // Tall plant in a pot
+    const plantPot = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.22, 0.3, 0.45, 16),
+        new THREE.MeshStandardMaterial({ color: 0x795548 })
+    );
+    plantPot.position.set(artRoomX + 8, artRoomY + 0.225, artRoomZ + 6.5);
+    scene.add(plantPot);
+    const plantLeaves = new THREE.Mesh(
+        new THREE.SphereGeometry(0.38, 16, 16),
+        new THREE.MeshStandardMaterial({ color: 0x388e3c })
+    );
+    plantLeaves.position.set(plantPot.position.x, plantPot.position.y + 0.38, plantPot.position.z);
+    scene.add(plantLeaves);
+
+    // Stack of sketchbooks
+    for (let i = 0; i < 5; i++) {
+        const sketchbook = new THREE.Mesh(
+            new THREE.BoxGeometry(0.32, 0.04, 0.42),
+            new THREE.MeshStandardMaterial({ color: 0x212121 + i * 0x222222 })
+        );
+        sketchbook.position.set(artRoomX + 7, artRoomY + 1.45 + i * 0.045, artRoomZ + 3.1);
+        scene.add(sketchbook);
+    }
+
+    // Paint palette (oval)
+    const palette = new THREE.Mesh(
+        new THREE.SphereGeometry(0.22, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.6),
+        new THREE.MeshStandardMaterial({ color: 0xffe0b2 })
+    );
+    palette.scale.set(1.2, 1, 0.18);
+    palette.position.set(artRoomX + 7, artRoomY + 1.1, artRoomZ + 3.7);
+    scene.add(palette);
+    // Paint blobs on palette
+    const paintColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff];
+    for (let i = 0; i < paintColors.length; i++) {
+        const blob = new THREE.Mesh(
+            new THREE.SphereGeometry(0.03, 8, 8),
+            new THREE.MeshStandardMaterial({ color: paintColors[i] })
+        );
+        blob.position.set(
+            palette.position.x + 0.09 * Math.cos(i * 1.2),
+            palette.position.y + 0.03,
+            palette.position.z + 0.09 * Math.sin(i * 1.2)
+        );
+        scene.add(blob);
+    }
+
+    // Wall clock
+    const clock = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.32, 0.32, 0.06, 32),
+        new THREE.MeshStandardMaterial({ color: 0xffffff })
+    );
+    clock.position.set(artRoomX + 2, artRoomY + 1.8, artRoomZ - 2.5);
+    clock.rotation.x = Math.PI / 2;
+    scene.add(clock);
+    // Clock hands
+    const hourHand = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 0.03, 0.03),
+        new THREE.MeshStandardMaterial({ color: 0x212121 })
+    );
+    hourHand.position.set(clock.position.x, clock.position.y + 0.04, clock.position.z);
+    hourHand.rotation.z = Math.PI / 4;
+    const minuteHand = new THREE.Mesh(
+        new THREE.BoxGeometry(0.18, 0.02, 0.02),
+        new THREE.MeshStandardMaterial({ color: 0x212121 })
+    );
+    minuteHand.position.set(clock.position.x, clock.position.y + 0.04, clock.position.z);
+    minuteHand.rotation.z = Math.PI / 1.5;
+    scene.add(minuteHand);
+
+    // Framed artwork (on wall)
+    const frame = new THREE.Mesh(
+        new THREE.BoxGeometry(1.2, 0.9, 0.07),
+        new THREE.MeshStandardMaterial({ color: 0x6d4c41 })
+    );
+    frame.position.set(artRoomX + 4, artRoomY + 1.5, artRoomZ - 2.5);
+    scene.add(frame);
+    const art = new THREE.Mesh(
+        new THREE.BoxGeometry(1.05, 0.75, 0.01),
+        new THREE.MeshStandardMaterial({ color: 0x90caf9 })
+    );
+    art.position.set(frame.position.x, frame.position.y, frame.position.z + 0.04);
+    scene.add(art);
+
+    // Box of clay
+    const clayBox = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.18, 0.45),
+        new THREE.MeshStandardMaterial({ color: 0x8d6e63 })
+    );
+    clayBox.position.set(artRoomX + 6.5, artRoomY + 0.09, artRoomZ + 2.2);
+    scene.add(clayBox);
+    // Clay lumps
+    for (let i = 0; i < 3; i++) {
+        const lump = new THREE.Mesh(
+            new THREE.SphereGeometry(0.09, 10, 10),
+            new THREE.MeshStandardMaterial({ color: 0xa1887f })
+        );
+        lump.position.set(clayBox.position.x - 0.15 + i * 0.15, clayBox.position.y + 0.13, clayBox.position.z);
+        scene.add(lump);
+    }
+
+    // Apron rack (with aprons)
+    const rack = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.06, 0.06, 1.7, 12),
+        new THREE.MeshStandardMaterial({ color: 0x757575 })
+    );
+    rack.position.set(artRoomX + 8, artRoomY + 0.85, artRoomZ + 2.5);
+    scene.add(rack);
+    for (let i = 0; i < 3; i++) {
+        const apron = new THREE.Mesh(
+            new THREE.BoxGeometry(0.32, 0.5, 0.03),
+            new THREE.MeshStandardMaterial({ color: [0xff7043, 0x4fc3f7, 0x81c784][i] })
+        );
+        apron.position.set(rack.position.x, rack.position.y + 0.3 - i * 0.5, rack.position.z + 0.13);
+        apron.rotation.z = Math.PI / 16 * (i - 1);
+        scene.add(apron);
+    }
+
+    // Tall drying rack
+    const dryingRack = new THREE.Mesh(
+        new THREE.BoxGeometry(0.5, 1.4, 0.18),
+        new THREE.MeshStandardMaterial({ color: 0xbdbdbd })
+    );
+    dryingRack.position.set(artRoomX + 6.5, artRoomY + 0.7, artRoomZ + 6.5);
+    scene.add(dryingRack);
+    for (let i = 0; i < 5; i++) {
+        const bar = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.015, 0.015, 0.48, 8),
+            new THREE.MeshStandardMaterial({ color: 0x757575 })
+        );
+        bar.position.set(dryingRack.position.x, artRoomY + 0.2 + i * 0.25, dryingRack.position.z);
+        bar.rotation.z = Math.PI / 2;
+        scene.add(bar);
+    }
+
+    // Small step stool
+    const stool = new THREE.Mesh(
+        new THREE.BoxGeometry(0.45, 0.18, 0.32),
+        new THREE.MeshStandardMaterial({ color: 0xfbc02d })
+    );
+    stool.position.set(artRoomX + 5.5, artRoomY + 0.09, artRoomZ + 6.5);
+    scene.add(stool);
+    // Stool legs
+    for (let i = 0; i < 4; i++) {
+        const leg = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.04, 0.04, 0.18, 8),
+            new THREE.MeshStandardMaterial({ color: 0x8d6e63 })
+        );
+        leg.position.set(
+            stool.position.x + (i < 2 ? -0.16 : 0.16),
+            stool.position.y - 0.09,
+            stool.position.z + (i % 2 === 0 ? -0.11 : 0.11)
+        );
+        scene.add(leg);
+    }
+
+    // Floor lamp
+    const lampBase = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.13, 0.18, 0.08, 16),
+        new THREE.MeshStandardMaterial({ color: 0x616161 })
+    );
+    lampBase.position.set(artRoomX + 8, artRoomY + 0.04, artRoomZ - 1.5);
+    scene.add(lampBase);
+    const lampPole = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.04, 0.04, 1.7, 12),
+        new THREE.MeshStandardMaterial({ color: 0xbdbdbd })
+    );
+    lampPole.position.set(lampBase.position.x, artRoomY + 0.89, lampBase.position.z);
+    scene.add(lampPole);
+    const lampShade = new THREE.Mesh(
+        new THREE.ConeGeometry(0.28, 0.32, 16),
+        new THREE.MeshStandardMaterial({ color: 0xfff9c4, transparent: true, opacity: 0.8 })
+    );
+    lampShade.position.set(lampPole.position.x, lampPole.position.y + 0.85, lampPole.position.z);
+    scene.add(lampShade);
+
+    // === Densely fill the Art Room with props and work zones ===
+    // Helper: random offset for more natural placement
+    function randOffset(range) { return (Math.random() - 0.5) * range; }
+
+    // Add 4 work zones in the center/front of the room
+    for (let i = 0; i < 4; i++) {
+        const zoneX = artRoomX - 6 + i * 4.5 + randOffset(1.2);
+        const zoneZ = artRoomZ + 4 + i * 2.5 + randOffset(1.2);
+        // Table
+        const workTable = new THREE.Mesh(
+            new THREE.BoxGeometry(1.6, 0.12, 0.8),
+            new THREE.MeshStandardMaterial({ color: 0xdeb887 })
+        );
+        workTable.position.set(zoneX, artRoomY + 0.75, zoneZ);
+        workTable.rotation.y = randOffset(Math.PI / 8);
+        scene.add(workTable);
+        // Table legs
+        for (let lx of [-0.7, 0.7]) {
+            for (let lz of [-0.3, 0.3]) {
+                const leg = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.07, 0.07, 0.75, 10),
+                    new THREE.MeshStandardMaterial({ color: 0x8b5a2b })
+                );
+                leg.position.set(workTable.position.x + lx, artRoomY + 0.375, workTable.position.z + lz);
+                scene.add(leg);
+            }
+        }
+        // 2 stools per table
+        for (let s = 0; s < 2; s++) {
+            const stool = new THREE.Mesh(
+                new THREE.BoxGeometry(0.45, 0.18, 0.32),
+                new THREE.MeshStandardMaterial({ color: 0xfbc02d })
+            );
+            stool.position.set(
+                workTable.position.x + (s === 0 ? -0.7 : 0.7),
+                artRoomY + 0.09,
+                workTable.position.z + randOffset(0.4)
+            );
+            stool.rotation.y = randOffset(Math.PI / 8);
+            scene.add(stool);
+            // Stool legs
+            for (let l = 0; l < 4; l++) {
+                const leg = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.04, 0.04, 0.18, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x8d6e63 })
+                );
+                leg.position.set(
+                    stool.position.x + (l < 2 ? -0.16 : 0.16),
+                    stool.position.y - 0.09,
+                    stool.position.z + (l % 2 === 0 ? -0.11 : 0.11)
+                );
+                scene.add(leg);
+            }
+        }
+        // Scatter art supplies on table
+        for (let j = 0; j < 4; j++) {
+            const supplyType = Math.floor(Math.random() * 3);
+            if (supplyType === 0) {
+                // Paint tube
+                const tube = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.025, 0.025, 0.18, 8),
+                    new THREE.MeshStandardMaterial({ color: [0xff0000, 0x00ff00, 0x0000ff, 0xffff00][j % 4] })
+                );
+                tube.position.set(
+                    workTable.position.x + randOffset(0.5),
+                    workTable.position.y + 0.08,
+                    workTable.position.z + randOffset(0.3)
+                );
+                tube.rotation.z = randOffset(Math.PI / 2);
+                scene.add(tube);
+            } else if (supplyType === 1) {
+                // Jar
+                const jar = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.05, 0.05, 0.13, 8),
+                    new THREE.MeshStandardMaterial({ color: [0x90caf9, 0xffcc80, 0xa5d6a7][j % 3] })
+                );
+                jar.position.set(
+                    workTable.position.x + randOffset(0.5),
+                    workTable.position.y + 0.09,
+                    workTable.position.z + randOffset(0.3)
+                );
+                scene.add(jar);
+            } else {
+                // Sheet of paper
+                const paper = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.22, 0.01, 0.3),
+                    new THREE.MeshStandardMaterial({ color: 0xf5f5f5 })
+                );
+                paper.position.set(
+                    workTable.position.x + randOffset(0.5),
+                    workTable.position.y + 0.065,
+                    workTable.position.z + randOffset(0.3)
+                );
+                paper.rotation.y = randOffset(Math.PI / 8);
+                scene.add(paper);
+            }
+        }
+    }
+
+    // Add more bins, boxes, and clutter in the center/front
+    for (let i = 0; i < 6; i++) {
+        const bin = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.13, 0.16, 0.32, 10),
+            new THREE.MeshStandardMaterial({ color: 0x757575 })
+        );
+        bin.position.set(
+            artRoomX - 7 + i * 2.5 + randOffset(0.7),
+            artRoomY + 0.16,
+            artRoomZ + 5 + randOffset(2.5)
+        );
+        scene.add(bin);
+        // Some bins have crumpled paper
+        if (i % 2 === 0) {
+            for (let j = 0; j < 3; j++) {
+                const crumple = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.04, 6, 6),
+                    new THREE.MeshStandardMaterial({ color: 0xf5f5f5 })
+                );
+                crumple.position.set(
+                    bin.position.x + randOffset(0.08),
+                    bin.position.y + 0.18 + randOffset(0.05),
+                    bin.position.z + randOffset(0.08)
+                );
+                scene.add(crumple);
+            }
+        }
+    }
+
+    // Add more boxes and crates
+    for (let i = 0; i < 5; i++) {
+        const box = new THREE.Mesh(
+            new THREE.BoxGeometry(0.5 + randOffset(0.2), 0.22 + randOffset(0.1), 0.35 + randOffset(0.1)),
+            new THREE.MeshStandardMaterial({ color: 0x8d6e63 })
+        );
+        box.position.set(
+            artRoomX - 6 + i * 3.2 + randOffset(1.2),
+            artRoomY + 0.12,
+            artRoomZ + 8 + randOffset(2.5)
+        );
+        box.rotation.y = randOffset(Math.PI / 8);
+        scene.add(box);
+    }
+
+    // Add more paper rolls
+    for (let i = 0; i < 8; i++) {
+        const roll = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.06, 0.06, 0.7 + randOffset(0.2), 16),
+            new THREE.MeshStandardMaterial({ color: 0xf5f5f5 })
+        );
+        roll.position.set(
+            artRoomX - 8 + i * 2.2 + randOffset(0.7),
+            artRoomY + 0.35,
+            artRoomZ + 7 + randOffset(2.5)
+        );
+        roll.rotation.x = Math.PI / 2 + randOffset(Math.PI / 12);
+        scene.add(roll);
+    }
+
+    // Add more jars and bottles on the floor
+    for (let i = 0; i < 10; i++) {
+        const jar = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.05, 0.05, 0.13, 8),
+            new THREE.MeshStandardMaterial({ color: [0x90caf9, 0xffcc80, 0xa5d6a7, 0xff7043, 0x42a5f5][i % 5] })
+        );
+        jar.position.set(
+            artRoomX - 8 + randOffset(16),
+            artRoomY + 0.09,
+            artRoomZ + 3 + randOffset(10)
+        );
+        scene.add(jar);
+    }
+
+    decorateTeachersLounge();
+    decorateConferenceRoom();
+    decorateSecondFloorLibrary();
+    decorateSecondFloorComputerLab();
+
+
+
+    // ☕ Second Floor Teacher's Lounge Furniture
+    function decorateTeachersLounge() {
+        const loungeY = secondFloorHeight;
+        const loungeZ = 15;
+
+        // 🛋️ Sofa
+        const sofa = new THREE.Mesh(
+            new THREE.BoxGeometry(3, 1, 1),
+            new THREE.MeshStandardMaterial({ color: 0x4b3832 }) // deep brown
+        );
+        sofa.position.set(2, loungeY + 0.5, loungeZ + 8);
+        scene.add(sofa);
+
+        // Sofa backrest
+        const backrest = new THREE.Mesh(
+            new THREE.BoxGeometry(3, 1, 0.2),
+            new THREE.MeshStandardMaterial({ color: 0x4b3832 })
+        );
+        backrest.position.set(2, loungeY + 1, loungeZ + 8.4); // behind sofa
+        scene.add(backrest);
+
+        // Coffee Table
+        const coffeeTable = new THREE.Mesh(
+            new THREE.BoxGeometry(1.5, 0.2, 1),
+            new THREE.MeshStandardMaterial({ color: 0x8b4513 }) // wood brown
+        );
+        coffeeTable.position.set(2, loungeY + 0.6, loungeZ + 6);
+        scene.add(coffeeTable);
+
+        // 🗄️ Bookshelf
+        const shelf = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 2, 0.3),
+            new THREE.MeshStandardMaterial({ color: 0x3a3a3a }) // dark gray
+        );
+        shelf.position.set(6.5, loungeY + 1, loungeZ + 1); // right wall
+        scene.add(shelf);
+
+        // 🧰 Cabinet
+        const cabinet = new THREE.Mesh(
+            new THREE.BoxGeometry(1.2, 1.2, 0.5),
+            new THREE.MeshStandardMaterial({ color: 0x888888 }) // gray
+        );
+        cabinet.position.set(-2, loungeY + 0.6, loungeZ - 6); // back wall
+        scene.add(cabinet);
+
+        // 🌿 Plant
+        const pot = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.2, 0.3, 0.4, 16),
+            new THREE.MeshStandardMaterial({ color: 0x006400 }) // dark green
+        );
+        pot.position.set(2, loungeY + 0.2, loungeZ); // center
+        scene.add(pot);
+    }
+
+    // 📌 Second Floor Conference Room Furniture
+    function decorateConferenceRoom() {
+        const conferenceY = secondFloorHeight;
+        const conferenceZ = 15;
+
+        // 🟫 Long Table
+        const longTable = new THREE.Mesh(
+            new THREE.BoxGeometry(6, 0.2, 1.5),
+            new THREE.MeshStandardMaterial({ color: 0x8b4513 }) // wood
+        );
+        longTable.position.set(17, conferenceY + 1, conferenceZ);
+        scene.add(longTable);
+
+        // 🪑 Chairs around table (10 total)
+        const chairMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const chairGeometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+        const backrestGeometry = new THREE.BoxGeometry(0.6, 0.8, 0.1);
+
+        for (let i = 0; i < 5; i++) {
+            const dx = -2.5 + i * 1.25;
+
+            // Left side (Z - 1), face right (toward table, rotation.y = 0)
+            const chairL = new THREE.Mesh(chairGeometry, chairMaterial);
+            chairL.position.set(17 + dx, conferenceY + 0.3, conferenceZ - 1);
+            chairL.rotation.y = 0;
+            scene.add(chairL);
+
+            const backrestL = new THREE.Mesh(backrestGeometry, chairMaterial);
+            backrestL.position.set(17 + dx, conferenceY + 0.9, conferenceZ - 1 - 0.35); // behind seat
+            backrestL.rotation.y = 0;
+            scene.add(backrestL);
+
+            // Right side (Z + 1), face left (toward table, rotation.y = Math.PI)
+            const chairR = new THREE.Mesh(chairGeometry, chairMaterial);
+            chairR.position.set(17 + dx, conferenceY + 0.3, conferenceZ + 1);
+            chairR.rotation.y = Math.PI;
+            scene.add(chairR);
+
+            const backrestR = new THREE.Mesh(backrestGeometry, chairMaterial);
+            backrestR.position.set(17 + dx, conferenceY + 0.9, conferenceZ + 1 + 0.35); // behind seat
+            backrestR.rotation.y = Math.PI;
+            scene.add(backrestR);
+        }
+
+        // 🗂️ Cabinet at back wall
+        const cabinet = new THREE.Mesh(
+            new THREE.BoxGeometry(2, 1.2, 0.5),
+            new THREE.MeshStandardMaterial({ color: 0x555555 })
+        );
+        cabinet.position.set(17, conferenceY + 0.6, 27.2);
+        scene.add(cabinet);
+
+        // === Second set of table and chairs in the conference room ===
+        // Place the new table further back (z = conferenceZ + 4)
+        const secondTableZ = conferenceZ + 4;
+        const longTable2 = new THREE.Mesh(
+            new THREE.BoxGeometry(6, 0.2, 1.5),
+            new THREE.MeshStandardMaterial({ color: 0x8b4513 }) // wood
+        );
+        longTable2.position.set(17, conferenceY + 1, secondTableZ);
+        scene.add(longTable2);
+
+        for (let i = 0; i < 5; i++) {
+            const dx = -2.5 + i * 1.25;
+
+            // Left side (Z - 1), face right (toward table, rotation.y = 0)
+            const chairL = new THREE.Mesh(chairGeometry, chairMaterial);
+            chairL.position.set(17 + dx, conferenceY + 0.3, secondTableZ - 1);
+            chairL.rotation.y = 0;
+            scene.add(chairL);
+
+            const backrestL = new THREE.Mesh(backrestGeometry, chairMaterial);
+            backrestL.position.set(17 + dx, conferenceY + 0.9, secondTableZ - 1 - 0.35); // behind seat
+            backrestL.rotation.y = 0;
+            scene.add(backrestL);
+
+            // Right side (Z + 1), face left (toward table, rotation.y = Math.PI)
+            const chairR = new THREE.Mesh(chairGeometry, chairMaterial);
+            chairR.position.set(17 + dx, conferenceY + 0.3, secondTableZ + 1);
+            chairR.rotation.y = Math.PI;
+            scene.add(chairR);
+
+            const backrestR = new THREE.Mesh(backrestGeometry, chairMaterial);
+            backrestR.position.set(17 + dx, conferenceY + 0.9, secondTableZ + 1 + 0.35); // behind seat
+            backrestR.rotation.y = Math.PI;
+            scene.add(backrestR);
+        }
+
+        // === Third set of table and chairs in the conference room (in front of the original) ===
+        // Place the new table in front (z = conferenceZ - 4)
+        const thirdTableZ = conferenceZ - 4;
+        const longTable3 = new THREE.Mesh(
+            new THREE.BoxGeometry(6, 0.2, 1.5),
+            new THREE.MeshStandardMaterial({ color: 0x8b4513 }) // wood
+        );
+        longTable3.position.set(17, conferenceY + 1, thirdTableZ);
+        scene.add(longTable3);
+
+        for (let i = 0; i < 5; i++) {
+            const dx = -2.5 + i * 1.25;
+
+            // Left side (Z - 1), face right (toward table, rotation.y = 0)
+            const chairL = new THREE.Mesh(chairGeometry, chairMaterial);
+            chairL.position.set(17 + dx, conferenceY + 0.3, thirdTableZ - 1);
+            chairL.rotation.y = 0;
+            scene.add(chairL);
+
+            const backrestL = new THREE.Mesh(backrestGeometry, chairMaterial);
+            backrestL.position.set(17 + dx, conferenceY + 0.9, thirdTableZ - 1 - 0.35); // behind seat
+            backrestL.rotation.y = 0;
+            scene.add(backrestL);
+
+            // Right side (Z + 1), face left (toward table, rotation.y = Math.PI)
+            const chairR = new THREE.Mesh(chairGeometry, chairMaterial);
+            chairR.position.set(17 + dx, conferenceY + 0.3, thirdTableZ + 1);
+            chairR.rotation.y = Math.PI;
+            scene.add(chairR);
+
+            const backrestR = new THREE.Mesh(backrestGeometry, chairMaterial);
+            backrestR.position.set(17 + dx, conferenceY + 0.9, thirdTableZ + 1 + 0.35); // behind seat
+            backrestR.rotation.y = Math.PI;
+            scene.add(backrestR);
+        }
+
+        // === Additional conference room furniture ===
+        // Sideboard/cabinet along the left wall
+        const sideboard = new THREE.Mesh(
+            new THREE.BoxGeometry(2.5, 0.8, 0.5),
+            new THREE.MeshStandardMaterial({ color: 0x888888 })
+        );
+        sideboard.position.set(13.5, conferenceY + 0.4, conferenceZ + 7);
+        scene.add(sideboard);
+
+        // Potted plant in the far right corner
+        const plantPot = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.18, 0.22, 0.35, 12),
+            new THREE.MeshStandardMaterial({ color: 0x795548 })
+        );
+        plantPot.position.set(20.5, conferenceY + 0.175, conferenceZ - 7);
+        scene.add(plantPot);
+        const plantLeaves = new THREE.Mesh(
+            new THREE.SphereGeometry(0.32, 12, 12),
+            new THREE.MeshStandardMaterial({ color: 0x388e3c })
+        );
+        plantLeaves.position.set(plantPot.position.x, plantPot.position.y + 0.32, plantPot.position.z);
+        scene.add(plantLeaves);
+
+        // Wall clock above the sideboard
+        const clock = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.28, 0.28, 0.06, 24),
+            new THREE.MeshStandardMaterial({ color: 0xffffff })
+        );
+        clock.position.set(13.5, conferenceY + 1.7, conferenceZ + 7.6);
+        scene.add(clock);
+        const hourHand = new THREE.Mesh(
+            new THREE.BoxGeometry(0.09, 0.03, 0.03),
+            new THREE.MeshStandardMaterial({ color: 0x212121 })
+        );
+        hourHand.position.set(clock.position.x, clock.position.y + 0.04, clock.position.z + 0.03);
+        hourHand.rotation.set(0, 0, Math.PI / 4);
+        scene.add(hourHand);
+        const minuteHand = new THREE.Mesh(
+            new THREE.BoxGeometry(0.14, 0.02, 0.02),
+            new THREE.MeshStandardMaterial({ color: 0x212121 })
+        );
+        minuteHand.position.set(clock.position.x, clock.position.y + 0.04, clock.position.z + 0.03);
+        minuteHand.rotation.set(0, 0, Math.PI / 1.5);
+        scene.add(minuteHand);
+
+        // Stack of folders on the original table
+        for (let i = 0; i < 3; i++) {
+            const folder = new THREE.Mesh(
+                new THREE.BoxGeometry(0.35, 0.04, 0.28),
+                new THREE.MeshStandardMaterial({ color: [0xffe082, 0x90caf9, 0xffab91][i] })
+            );
+            folder.position.set(17.7 + i * 0.4, conferenceY + 1.13 + i * 0.045, conferenceZ + 0.2);
+            folder.rotation.y = Math.PI / 32 * i;
+            scene.add(folder);
+        }
+
+        // Trash bin near the door
+        const trash = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.18, 0.22, 0.5, 12),
+            new THREE.MeshStandardMaterial({ color: 0x616161 })
+        );
+        trash.position.set(13, conferenceY + 0.25, conferenceZ - 7.5);
+        scene.add(trash);
+    }
+
+    // Second Floor Library Furnitures
+    function decorateSecondFloorLibrary() {
+        const y = secondFloorHeight;
+        const baseX = 5.2;
+        const libraryZ = -21.5;
+
+        const chairMaterial = new THREE.MeshStandardMaterial({ color: 0xD3D3D3 });
+
+        function createReadingSet(centerX) {
+            // 📘 Table
+            const table = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 0.2, 2.5),
+                new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+            );
+            table.position.set(centerX, y + 1, libraryZ);
+            scene.add(table);
+
+            // 🪑 4 Chairs
+            const chairOffsets = [
+                [0.6, -0.8], [0.6, 0.8],
+                [-0.6, -0.8], [-0.6, 0.8]
+            ];
+
+            for (const [dx, dz] of chairOffsets) {
+                const chair = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.6, 0.6, 0.6),
+                    chairMaterial
+                );
+                chair.position.set(centerX + dx, y + 0.3, libraryZ + dz);
+                scene.add(chair);
+
+                const backrest = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.6, 0.8, 0.1),
+                    chairMaterial
+                );
+                backrest.position.set(
+                    centerX + dx + (dx > 0 ? 0.3 : -0.3),
+                    y + 0.9,
+                    libraryZ + dz
+                );
+                backrest.rotation.y = Math.PI / 2;
+                scene.add(backrest);
+            }
+        }
+
+        createReadingSet(baseX);
+        createReadingSet(baseX + 3);
+
+        const bookBaseX = 5.2;
+        const bookBaseY = secondFloorHeight + 1.13;
+        const bookBaseZ = -21.5;
+
+        const bookColors = [0x8b0000, 0x003366, 0x4b0082];
+
+        for (let i = 0; i < 3; i++) {
+            const bookGeo = new THREE.BoxGeometry(0.6, 0.05, 0.4);
+            const bookMat = new THREE.MeshStandardMaterial({ color: bookColors[i] });
+            const book = new THREE.Mesh(bookGeo, bookMat);
+            book.position.set(
+                bookBaseX + 0.15,
+                bookBaseY + i * 0.05,
+                bookBaseZ + 0.1
+            );
+            book.rotation.y = (i % 2 === 0) ? 0.1 : -0.1;
+            scene.add(book);
+        }
+
+        // 📚 Updated stack of books for right table with varied design
+        const bookDesigns = [
+            { color: 0x4B0082, width: 0.5, height: 0.06, depth: 0.35, yOffset: 0 },
+            { color: 0x556B2F, width: 0.55, height: 0.05, depth: 0.4, yOffset: 0.06, rotation: 0.05 },
+            { color: 0x8B0000, width: 0.6, height: 0.07, depth: 0.38, yOffset: 0.11, rotation: -0.05 }
+        ];
+
+        const rightTableX = 8.2;
+        const tableTopY = secondFloorHeight + 1.13;
+        const tableZ = -21.5;
+
+        bookDesigns.forEach((bookData, i) => {
+            const geometry = new THREE.BoxGeometry(bookData.width, bookData.height, bookData.depth);
+            const material = new THREE.MeshStandardMaterial({ color: bookData.color });
+            const book = new THREE.Mesh(geometry, material);
+
+            book.position.set(
+                rightTableX + 0.15,
+                tableTopY + bookData.yOffset,
+                tableZ + 0.1
+            );
+            if (bookData.rotation) {
+                book.rotation.y = bookData.rotation;
+            }
+            scene.add(book);
+        });
+
+
+    }
+
+    function decorateSecondFloorComputerLab() {
+        const y = secondFloorHeight;
+        const deskMaterial = new THREE.MeshStandardMaterial({ color: 0x4e342e });
+        const chairMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
+        const monitorMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+
+        // First group (already added at x: 15 and 17.5)
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 2; col++) {
+                const x = 15 + col * 2.5;
+                const z = -19 + row * -2;
+
+                // Chair
+                const chair = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.6, 0.6, 0.6),
+                    chairMaterial
+                );
+                chair.position.set(x, y + 0.3, z + 0.9);
+                chair.rotation.y = Math.PI;
+                scene.add(chair);
+
+                // Backrest
+                const backrest = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.6, 0.8, 0.1),
+                    chairMaterial
+                );
+                backrest.position.set(x, y + 0.9, z + 1.15);
+                backrest.rotation.y = Math.PI;
+                scene.add(backrest);
+
+                // Desk
+                const desk = new THREE.Mesh(
+                    new THREE.BoxGeometry(1.5, 0.8, 0.8),
+                    deskMaterial
+                );
+                desk.position.set(x, y + 0.4, z);
+                desk.rotation.y = Math.PI;
+                scene.add(desk);
+
+                // Monitor
+                const monitor = new THREE.Mesh(
+                    new THREE.BoxGeometry(1, 0.6, 0.1),
+                    monitorMaterial
+                );
+                monitor.position.set(x, y + 1.1, z - 0.2);
+                scene.add(monitor);
+            }
+        }
+
+        for (let row = 0; row < 2; row++) { // removed last row
+            for (let col = 0; col < 2; col++) {
+                const x = 21 + col * 2.5; // shifted right
+                const z = -19 + row * -2;
+
+                const chair = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.6, 0.6, 0.6),
+                    chairMaterial
+                );
+                chair.position.set(x, y + 0.3, z + 0.9);
+                chair.rotation.y = Math.PI;
+                scene.add(chair);
+
+                const backrest = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.6, 0.8, 0.1),
+                    chairMaterial
+                );
+                backrest.position.set(x, y + 0.9, z + 1.15);
+                backrest.rotation.y = Math.PI;
+                scene.add(backrest);
+
+                const desk = new THREE.Mesh(
+                    new THREE.BoxGeometry(1.5, 0.8, 0.8),
+                    deskMaterial
+                );
+                desk.position.set(x, y + 0.4, z);
+                desk.rotation.y = Math.PI;
+                scene.add(desk);
+
+                const monitor = new THREE.Mesh(
+                    new THREE.BoxGeometry(1, 0.6, 0.1),
+                    monitorMaterial
+                );
+                monitor.position.set(x, y + 1.1, z - 0.2);
+                scene.add(monitor);
+            }
+        }
+    }
 }
-
-
-
 
 // Second floor rooms Function
 function createSecondFloorRoom(x, y, z, width, height, depth, name, rotationY = 0) {
